@@ -32,6 +32,7 @@
   --red:#C8342B;       /* 比利時紅 */
   --green:#2F7D5B;     /* 運河邊的樹 */
   --soft:#E6ECF6;
+  --water:#D3E2F4; --land:#FFFFFF; --land-be:#FFF5DF; --land-x:#E8ECF2; --river:#8DAEDC;
   --on-accent:#FFFFFF;
   --on-gold:#14213D;
   --shadow:0 4px 0 var(--blue);
@@ -43,13 +44,13 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#0E1424; --paper:#18213A; --ink:#EEF2FA; --ink-2:#A9B4CC; --line:#C9D5EC;
-    --blue:#6E9BEA; --blue-2:#22325A; --soft:#223052; --shadow:0 4px 0 #050914;
+    --blue:#6E9BEA; --blue-2:#22325A; --soft:#223052; --shadow:0 4px 0 #050914; --water:#0A1630; --land:#1F2A47; --land-be:#2A2B45; --land-x:#141C31; --river:#3E62A0;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#0E1424; --paper:#18213A; --ink:#EEF2FA; --ink-2:#A9B4CC; --line:#C9D5EC;
-  --blue:#6E9BEA; --blue-2:#22325A; --soft:#223052; --shadow:0 4px 0 #050914;
+  --blue:#6E9BEA; --blue-2:#22325A; --soft:#223052; --shadow:0 4px 0 #050914; --water:#0A1630; --land:#1F2A47; --land-be:#2A2B45; --land-x:#141C31; --river:#3E62A0;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -277,6 +278,60 @@ footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;f
   .cd{min-width:62px}
   .cd .n{font-size:32px}
 }
+
+/* 地圖卡：路線（荷比全圖）／景點（當天各站編號）／Google 地圖 */
+.mapcard{padding:12px;margin-bottom:18px}
+.mapseg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.mapseg button{border:2px solid var(--line);background:var(--paper);border-radius:8px;padding:3px 11px;font-weight:900;font-size:13px}
+.mapseg button[aria-pressed="true"]{background:var(--blue);color:var(--on-accent);border-color:var(--blue)}
+.mapseg button:focus-visible,.mapchips button:focus-visible,.stoplist button:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.mapsvg{display:block;width:100%;height:auto;max-width:520px;margin:0 auto;border-radius:12px;background:var(--water)}
+.mapsvg .sea{fill:var(--water)}
+.mapsvg .lx{fill:var(--land-x);stroke:var(--ink-2);stroke-width:.6;stroke-opacity:.35}
+.mapsvg .nl{fill:var(--land);stroke:var(--ink);stroke-width:1.3;stroke-linejoin:round}
+.mapsvg .be{fill:var(--land-be);stroke:var(--ink);stroke-width:1.3;stroke-linejoin:round}
+.mapsvg .lk{fill:var(--water)}
+.mapsvg .rv{fill:none;stroke:var(--river);stroke-width:1.6;stroke-linejoin:round}
+.mapsvg .ctry{font-family:var(--display);font-size:22px;font-weight:700;fill:var(--ink-2);opacity:.55;letter-spacing:.2em}
+.mapsvg .seaname{font-family:var(--display);font-size:20px;fill:var(--blue);opacity:.6;letter-spacing:.3em}
+.mapsvg .rt-all{fill:none;stroke:var(--ink-2);stroke-width:2;stroke-dasharray:2 6;stroke-linecap:round;opacity:.6}
+.mapsvg .rt-on{fill:none;stroke:var(--orange);stroke-width:5;stroke-linecap:round}
+.mapsvg .rt-on.boat{stroke-dasharray:10 8}
+.mapsvg .cd{fill:var(--paper);stroke:var(--ink-2);stroke-width:2}
+.mapsvg .cd.on{fill:var(--orange);stroke:var(--ink);stroke-width:2.5}
+.mapsvg .cl{font-family:var(--body);font-size:17px;font-weight:700;fill:var(--ink-2);paint-order:stroke;stroke:var(--land);stroke-width:4px;stroke-linejoin:round}
+.mapsvg .cl.on{font-size:20px;font-weight:900;fill:var(--ink)}
+.mapsvg.zoom{background:var(--land)}
+.mapsvg .walk{fill:none;stroke:var(--blue);stroke-width:4.5;stroke-dasharray:1 11;stroke-linecap:round}
+.mapsvg .grid{fill:none;stroke:var(--soft);stroke-width:1.5}
+.mapsvg .sb{cursor:pointer}
+.mapsvg .sb circle{fill:var(--paper);stroke:var(--ink);stroke-width:3.5}
+.mapsvg .sb.must circle{fill:var(--orange);stroke:var(--ink)}
+.mapsvg .sb text{font-family:var(--num);font-size:26px;font-weight:800;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.mapsvg .sb.must text{fill:var(--on-accent)}
+.mapsvg .sb:hover circle,.mapsvg .sb:focus-visible circle{stroke:var(--blue);stroke-width:6}
+.mapsvg .sb:focus{outline:none}
+.mapsvg .scl{stroke:var(--ink);stroke-width:4;fill:none}
+.mapsvg .sct{font-family:var(--body);font-size:22px;font-weight:700;fill:var(--ink-2)}
+.cluster + .cluster{margin-top:14px}
+.cluster h5{margin:0 0 6px;font-family:var(--display);font-size:17px}
+.cluster h5 small{font-family:var(--body);font-size:12px;color:var(--ink-2);font-weight:700;margin-left:6px}
+.stoplist{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:4px 6px}
+.stoplist button{display:inline-flex;align-items:center;gap:5px;border:0;background:none;padding:2px 4px 2px 0;font-size:13px;font-weight:700;color:var(--ink-2);text-align:left}
+.stoplist button:hover{color:var(--blue)}
+.sn{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 4px;border-radius:11px;border:2px solid var(--ink);background:var(--paper);color:var(--ink);font-family:var(--num);font-size:12px;font-weight:800;line-height:1;flex:none}
+.sn.must{background:var(--orange);color:var(--on-accent)}
+.ev h4 .sn{margin-right:6px;vertical-align:2px}
+.mapnote{font-size:12px;color:var(--ink-2);font-weight:700;margin-top:8px}
+.mapnote a{color:var(--blue)}
+.mapchips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px;scrollbar-width:thin}
+.mapchips button{flex:none;border:2px solid var(--line);background:var(--paper);border-radius:8px;padding:2px 10px;font-weight:700;font-size:13px;white-space:nowrap}
+.mapchips button[aria-pressed="true"]{background:var(--blue);color:var(--on-accent);border-color:var(--blue)}
+.gmap{display:block;width:100%;height:56vh;min-height:300px;border:0;border-radius:12px;background:var(--soft)}
+.ev{scroll-margin-top:84px}
+.ev.flash .card{animation:flash 1.4s ease-out}
+@keyframes flash{0%,40%{background:var(--blue-2)}100%{background:var(--paper)}}
+@media (prefers-reduced-motion:reduce){.ev.flash .card{animation:none}}
 </style>
 </head>
 <body>
@@ -609,15 +664,15 @@ footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;f
       note:'早上落地，先回朋友家放行李。下午走九小街、安妮之家、約丹區，傍晚坐運河船。第一天早點睡調時差。',
       items:[
         {t:'前晚', tr:'plane', name:'10/18 22:50 桃園起飛 CI073', p:'飛 14 小時 50 分。'},
-        {t:'07:40', tr:'plane', name:'抵達史基浦機場', p:'第一次進申根要在 EES 機器錄指紋和拍照，入境可能排比較久。'},
-        {t:'09:00', tr:'ns', name:'史基浦 → 阿姆斯特丹中央車站', p:'約 15 分鐘。信用卡直接感應進出閘門，進站出站都要刷同一張卡。'},
+        {ll:[52.3105,4.7683], t:'07:40', tr:'plane', name:'抵達史基浦機場', p:'第一次進申根要在 EES 機器錄指紋和拍照，入境可能排比較久。'},
+        {ll:[52.3791,4.9003], t:'09:00', tr:'ns', name:'史基浦 → 阿姆斯特丹中央車站', p:'約 15 分鐘。信用卡直接感應進出閘門，進站出站都要刷同一張卡。'},
         {t:'10:00', tr:'walk', name:'朋友家放行李、休息', p:'洗澡、換衣服。'},
-        {t:'12:30', tr:'tram', must:true, name:'荷蘭鬆餅 午餐', p:'The Pancake Bakery，Prinsengracht 191。甜的鹹的都有，荷蘭鬆餅是薄的大圓餅。', q:'The Pancake Bakery Amsterdam', alt:'Pancakes Amsterdam（九小街附近）。'},
-        {t:'13:30', tr:'walk', must:true, name:'九小街 De 9 Straatjes', p:'三條運河之間的九條小街，小店、古著、咖啡。', q:'De 9 Straatjes Amsterdam'},
-        {t:'15:00', tr:'walk', must:true, book:true, name:'安妮之家', p:'只能在官網買，每週二 10:00 開賣六週後的票。約 1 小時。', q:'Anne Frank Huis', alt:'沒搶到：早上 9:00 官網會放一些當天票。'},
-        {t:'16:15', tr:'walk', name:'約丹區 Jordaan → Winkel 43', p:'西教堂、運河小橋一路走。Winkel 43 的蘋果派配鮮奶油，排隊的人多。', q:'Winkel 43 Amsterdam'},
-        {t:'17:30', tr:'boat', must:true, name:'運河遊船', p:'約 1 小時，日落 18:40 前後，傍晚光線最好。安妮之家附近或中央車站前上船。', q:'Amsterdam canal cruise Anne Frank', alt:'Those Dam Boat Guys、Blue Boat Company、Lovers 都可以，現場或 GetYourGuide 買。'},
-        {t:'19:00', tr:'walk', must:true, book:true, name:'Moeders 荷蘭家常菜 晚餐', p:'Rozengracht 251。燉肉、馬鈴薯泥 stamppot，牆上掛滿客人媽媽的照片。要訂位。', q:'Moeders Amsterdam'},
+        {ll:[52.3765,4.8839], t:'12:30', tr:'tram', must:true, name:'荷蘭鬆餅 午餐', p:'The Pancake Bakery，Prinsengracht 191。甜的鹹的都有，荷蘭鬆餅是薄的大圓餅。', q:'The Pancake Bakery Amsterdam', alt:'Pancakes Amsterdam（九小街附近）。'},
+        {ll:[52.3696,4.8846], t:'13:30', tr:'walk', must:true, name:'九小街 De 9 Straatjes', p:'三條運河之間的九條小街，小店、古著、咖啡。', q:'De 9 Straatjes Amsterdam'},
+        {ll:[52.3752,4.8840], t:'15:00', tr:'walk', must:true, book:true, name:'安妮之家', p:'只能在官網買，每週二 10:00 開賣六週後的票。約 1 小時。', q:'Anne Frank Huis', alt:'沒搶到：早上 9:00 官網會放一些當天票。'},
+        {ll:[52.3784,4.8862], t:'16:15', tr:'walk', name:'約丹區 Jordaan → Winkel 43', p:'西教堂、運河小橋一路走。Winkel 43 的蘋果派配鮮奶油，排隊的人多。', q:'Winkel 43 Amsterdam'},
+        {ll:[52.3738,4.8852], t:'17:30', tr:'boat', must:true, name:'運河遊船', p:'約 1 小時，日落 18:40 前後，傍晚光線最好。安妮之家附近或中央車站前上船。', q:'Amsterdam canal cruise Anne Frank', alt:'Those Dam Boat Guys、Blue Boat Company、Lovers 都可以，現場或 GetYourGuide 買。'},
+        {ll:[52.3735,4.8775], t:'19:00', tr:'walk', must:true, book:true, name:'Moeders 荷蘭家常菜 晚餐', p:'Rozengracht 251。燉肉、馬鈴薯泥 stamppot，牆上掛滿客人媽媽的照片。要訂位。', q:'Moeders Amsterdam'},
         {t:'20:30', tr:'tram', name:'回朋友家', p:'早點睡。', alt:'還有力氣：紅燈區 De Wallen 晚上走一圈，不能拍櫥窗。'}
       ]
     },
@@ -626,14 +681,14 @@ footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;f
       title:'風車村 + 博物館廣場',
       note:'早上去桑斯安斯風車村，趁旅行團還沒到。中午吃 Albert Cuyp 市場，下午國家博物館和梵谷博物館。',
       items:[
-        {t:'08:30', tr:'ns', name:'中央車站 → Zaandijk Zaanse Schans', p:'往 Uitgeest 的區間車，約 17 分鐘，下車走 10 分鐘。'},
-        {t:'09:00', tr:'walk', must:true, name:'桑斯安斯風車村 Zaanse Schans', p:'沿河堤看風車，起司農場、木鞋工坊。2026 起官方宣布要收約 €17.5 入場費，去之前看官網。', q:'Zaanse Schans', alt:'想看更多風車：週六的小孩堤防。'},
+        {ll:[52.3791,4.9003], t:'08:30', tr:'ns', name:'中央車站 → Zaandijk Zaanse Schans', p:'往 Uitgeest 的區間車，約 17 分鐘，下車走 10 分鐘。'},
+        {ll:[52.4740,4.8180], t:'09:00', tr:'walk', must:true, name:'桑斯安斯風車村 Zaanse Schans', p:'沿河堤看風車，起司農場、木鞋工坊。2026 起官方宣布要收約 €17.5 入場費，去之前看官網。', q:'Zaanse Schans', alt:'想看更多風車：週六的小孩堤防。'},
         {t:'11:30', tr:'ns', name:'回中央車站 → 地鐵 52 到 De Pijp', p:'火車 17 分鐘，地鐵 52 號線約 5 分鐘。'},
-        {t:'12:15', tr:'walk', must:true, name:'Albert Cuyp 市場 午餐', p:'週一到週六開。現烤糖漿鬆餅 stroopwafel、炸魚塊 kibbeling、生鯡魚、荷蘭小鬆餅 poffertjes。', q:'Albert Cuyp Markt', alt:'週日不開，所以排今天。'},
-        {t:'13:30', tr:'walk', must:true, book:true, name:'國家博物館 Rijksmuseum', p:'從市場走 15 分鐘。夜巡、倒牛奶的女僕。官網預約時段，09:00–17:00。', q:'Rijksmuseum'},
-        {t:'15:45', tr:'walk', must:true, book:true, name:'梵谷博物館', p:'就在隔壁。只能官網買時段票，約 1.5 小時，開到 18:00。', q:'Van Gogh Museum'},
-        {t:'17:45', tr:'walk', name:'博物館廣場 → 馮德爾公園', p:'走一小段，天黑前回頭。'},
-        {t:'19:00', tr:'tram', must:true, book:true, name:'印尼飯 Rijsttafel 晚餐', p:'Restaurant Blauw，Amstelveenseweg 158。一次上十幾小碟，荷蘭殖民時期留下來的吃法。要訂位。', q:'Restaurant Blauw Amsterdam'},
+        {ll:[52.3557,4.8939], t:'12:15', tr:'walk', must:true, name:'Albert Cuyp 市場 午餐', p:'週一到週六開。現烤糖漿鬆餅 stroopwafel、炸魚塊 kibbeling、生鯡魚、荷蘭小鬆餅 poffertjes。', q:'Albert Cuyp Markt', alt:'週日不開，所以排今天。'},
+        {ll:[52.3600,4.8852], t:'13:30', tr:'walk', must:true, book:true, name:'國家博物館 Rijksmuseum', p:'從市場走 15 分鐘。夜巡、倒牛奶的女僕。官網預約時段，09:00–17:00。', q:'Rijksmuseum'},
+        {ll:[52.3584,4.8811], t:'15:45', tr:'walk', must:true, book:true, name:'梵谷博物館', p:'就在隔壁。只能官網買時段票，約 1.5 小時，開到 18:00。', q:'Van Gogh Museum'},
+        {ll:[52.3580,4.8686], t:'17:45', tr:'walk', name:'博物館廣場 → 馮德爾公園', p:'走一小段，天黑前回頭。'},
+        {ll:[52.3540,4.8550], t:'19:00', tr:'tram', must:true, book:true, name:'印尼飯 Rijsttafel 晚餐', p:'Restaurant Blauw，Amstelveenseweg 158。一次上十幾小碟，荷蘭殖民時期留下來的吃法。要訂位。', q:'Restaurant Blauw Amsterdam'},
         {t:'21:00', tr:'tram', name:'回朋友家'}
       ]
     },
@@ -642,13 +697,13 @@ footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;f
       title:'羊角村 Giethoorn',
       note:'整天去荷蘭東北的羊角村，自己開電動船。單程約 2 小時，早點出門。平日比週末人少。',
       items:[
-        {t:'07:45', tr:'ns', name:'中央車站 → Steenwijk', p:'往 Leeuwarden 或 Groningen 的城際列車，有時要在 Zwolle 換車，約 1 小時 50 分。用 NS App 查。'},
-        {t:'09:45', tr:'bus', name:'公車 70 → Giethoorn', p:'車站旁上車，Dominee Hylkemaweg 下車，約 20 分鐘。一樣刷信用卡。'},
-        {t:'10:15', tr:'boat', must:true, name:'租寧靜船 Whisper boat', p:'電動船不用駕照，1–2 小時，每小時約 €25–35。10 月還有開，時間可能縮短。', q:'Giethoorn whisper boat rental', alt:'不想自己開：坐有船長的導覽船，每人約 €12。'},
-        {t:'12:30', tr:'walk', name:'運河邊午餐', p:'Binnenpad 一帶的咖啡館，鬆餅、湯、三明治。'},
-        {t:'13:30', tr:'walk', must:true, name:'Binnenpad 散步', p:'沿著小運河走，茅草屋頂房子、小木橋。'},
+        {ll:[52.3791,4.9003], t:'07:45', tr:'ns', name:'中央車站 → Steenwijk', p:'往 Leeuwarden 或 Groningen 的城際列車，有時要在 Zwolle 換車，約 1 小時 50 分。用 NS App 查。'},
+        {ll:[52.7907,6.1190], t:'09:45', tr:'bus', name:'公車 70 → Giethoorn', p:'車站旁上車，Dominee Hylkemaweg 下車，約 20 分鐘。一樣刷信用卡。'},
+        {ll:[52.7395,6.0790], t:'10:15', tr:'boat', must:true, name:'租寧靜船 Whisper boat', p:'電動船不用駕照，1–2 小時，每小時約 €25–35。10 月還有開，時間可能縮短。', q:'Giethoorn whisper boat rental', alt:'不想自己開：坐有船長的導覽船，每人約 €12。'},
+        {ll:[52.7330,6.0782], t:'12:30', tr:'walk', name:'運河邊午餐', p:'Binnenpad 一帶的咖啡館，鬆餅、湯、三明治。'},
+        {ll:[52.7262,6.0812], t:'13:30', tr:'walk', must:true, name:'Binnenpad 散步', p:'沿著小運河走，茅草屋頂房子、小木橋。'},
         {t:'15:00', tr:'bus', name:'回 Steenwijk → 阿姆斯特丹', p:'約 17:30 回到中央車站。'},
-        {t:'18:30', tr:'walk', must:true, name:'棕色咖啡館 炸肉丸＋啤酒', p:'Café \'t Smalle，約丹區 Egelantiersgracht 12。炸肉丸 bitterballen 沾芥末，木頭老酒吧。', q:'Cafe t Smalle Amsterdam'},
+        {ll:[52.3770,4.8825], t:'18:30', tr:'walk', must:true, name:'棕色咖啡館 炸肉丸＋啤酒', p:'Café \'t Smalle，約丹區 Egelantiersgracht 12。炸肉丸 bitterballen 沾芥末，木頭老酒吧。', q:'Cafe t Smalle Amsterdam'},
         {t:'20:00', tr:'walk', name:'回朋友家，收過夜包', p:'明天去比利時，大行李留在朋友家。', alt:'還想出門：中央車站後面坐免費渡輪到北岸，A\'DAM Lookout 看夜景。'}
       ]
     },
@@ -657,21 +712,21 @@ footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;f
       title:'布魯塞爾 → 布魯日',
       note:'早上坐 Eurostar 到布魯塞爾，大廣場、尿尿小童、鬆餅、巧克力、薯條一次吃完。傍晚坐火車到布魯日住一晚。',
       items:[
-        {t:'09:00', tr:'euro', must:true, book:true, name:'Eurostar 阿姆斯特丹 → 布魯塞爾南站', p:'直達約 1 小時 52 分，越早訂越便宜。'},
+        {ll:[52.3791,4.9003], t:'09:00', tr:'euro', must:true, book:true, name:'Eurostar 阿姆斯特丹 → 布魯塞爾南站', p:'直達約 1 小時 52 分，越早訂越便宜。'},
         {t:'11:00', tr:'sncb', name:'南站 → 布魯塞爾中央車站', p:'轉火車一站，走到大廣場 5 分鐘。'},
-        {t:'11:15', tr:'walk', must:true, name:'大廣場 Grand-Place', p:'世界遺產，四周是金色的公會建築和市政廳。', q:'Grand-Place Brussels'},
-        {t:'11:45', tr:'walk', must:true, name:'尿尿小童', p:'大廣場走 5 分鐘，本人很小一尊，常常穿衣服。', q:'Manneken Pis'},
-        {t:'12:00', tr:'walk', must:true, name:'Maison Dandoy 鬆餅', p:'Rue au Beurre 31。布魯塞爾鬆餅（方、鬆脆）和列日鬆餅（圓、有糖粒）各點一個。', q:'Maison Dandoy Rue au Beurre'},
-        {t:'12:40', tr:'walk', must:true, name:'聖于貝爾長廊 巧克力', p:'玻璃頂拱廊。Neuhaus 是夾心巧克力的發源店，Mary 是皇室御用。', q:'Galeries Royales Saint-Hubert'},
-        {t:'13:30', tr:'walk', must:true, name:'Fritland 薯條 午餐', p:'證交所旁邊，比利時薯條炸兩次，配美乃滋或 andalouse 醬。', q:'Fritland Brussels', alt:'想坐下來吃淡菜鍋配薯條：Chez Léon（肉市街，觀光客多但經典）。'},
-        {t:'14:30', tr:'walk', name:'藝術山 Mont des Arts', p:'往上走看市區全景，旁邊是皇家廣場。', q:'Mont des Arts Brussels', alt:'喜歡超現實：馬格利特博物館就在旁邊。'},
+        {ll:[50.8467,4.3525], t:'11:15', tr:'walk', must:true, name:'大廣場 Grand-Place', p:'世界遺產，四周是金色的公會建築和市政廳。', q:'Grand-Place Brussels'},
+        {ll:[50.8450,4.3500], t:'11:45', tr:'walk', must:true, name:'尿尿小童', p:'大廣場走 5 分鐘，本人很小一尊，常常穿衣服。', q:'Manneken Pis'},
+        {ll:[50.8476,4.3522], t:'12:00', tr:'walk', must:true, name:'Maison Dandoy 鬆餅', p:'Rue au Beurre 31。布魯塞爾鬆餅（方、鬆脆）和列日鬆餅（圓、有糖粒）各點一個。', q:'Maison Dandoy Rue au Beurre'},
+        {ll:[50.8481,4.3546], t:'12:40', tr:'walk', must:true, name:'聖于貝爾長廊 巧克力', p:'玻璃頂拱廊。Neuhaus 是夾心巧克力的發源店，Mary 是皇室御用。', q:'Galeries Royales Saint-Hubert'},
+        {ll:[50.8479,4.3497], t:'13:30', tr:'walk', must:true, name:'Fritland 薯條 午餐', p:'證交所旁邊，比利時薯條炸兩次，配美乃滋或 andalouse 醬。', q:'Fritland Brussels', alt:'想坐下來吃淡菜鍋配薯條：Chez Léon（肉市街，觀光客多但經典）。'},
+        {ll:[50.8440,4.3567], t:'14:30', tr:'walk', name:'藝術山 Mont des Arts', p:'往上走看市區全景，旁邊是皇家廣場。', q:'Mont des Arts Brussels', alt:'喜歡超現實：馬格利特博物館就在旁邊。'},
         {t:'15:15', tr:'metro', name:'地鐵 6 號線 → 原子球塔', p:'Heysel 站下，約 25 分鐘，市區地鐵可以直接刷信用卡。', q:'Atomium'},
-        {t:'15:45', tr:'walk', name:'原子球塔 Atomium', p:'外面拍照就好；想進去約 €17，開到 18:00。'},
+        {ll:[50.8949,4.3415], t:'15:45', tr:'walk', name:'原子球塔 Atomium', p:'外面拍照就好；想進去約 €17，開到 18:00。'},
         {t:'16:45', tr:'metro', name:'回中央車站'},
         {t:'17:30', tr:'sncb', name:'布魯塞爾中央車站 → 布魯日', p:'城際列車約 1 小時，每半小時一班，不用訂位。用 SNCB App 買票。'},
         {t:'18:45', tr:'walk', name:'布魯日飯店入住', p:'車站走進古城約 20 分鐘。'},
-        {t:'19:30', tr:'walk', must:true, book:true, name:'Cambrinus 晚餐', p:'Philipstockstraat 19。啤酒燉牛肉 stoofvlees 配薯條，啤酒單很厚。要訂位。', q:'Cambrinus Brugge'},
-        {t:'21:00', tr:'walk', must:true, name:'夜晚的 Markt 和玫瑰碼頭', p:'鐘樓和運河打燈，人很少。', q:'Rozenhoedkaai Brugge'}
+        {ll:[51.2096,3.2265], t:'19:30', tr:'walk', must:true, book:true, name:'Cambrinus 晚餐', p:'Philipstockstraat 19。啤酒燉牛肉 stoofvlees 配薯條，啤酒單很厚。要訂位。', q:'Cambrinus Brugge'},
+        {ll:[51.2080,3.2250], t:'21:00', tr:'walk', must:true, name:'夜晚的 Markt 和玫瑰碼頭', p:'鐘樓和運河打燈，人很少。', q:'Rozenhoedkaai Brugge'}
       ]
     },
     {
@@ -679,19 +734,19 @@ footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;f
       title:'布魯日 → 根特 → 回荷蘭',
       note:'早上逛布魯日、坐運河船，下午到根特看城堡和根特祭壇畫，晚上經安特衛普坐車回荷蘭。',
       items:[
-        {t:'08:30', tr:'walk', must:true, name:'玫瑰碼頭 早上', p:'布魯日最經典的明信片角度，早上沒人。', q:'Rozenhoedkaai Brugge'},
-        {t:'09:00', tr:'walk', must:true, name:'鐘樓 Belfort', p:'366 階，09:00 開，線上買時段票。上面看整個古城。', q:'Belfort Brugge'},
-        {t:'10:00', tr:'boat', must:true, name:'運河船', p:'約 30 分鐘，現場排隊買票，3 月到 11 月中有開。', q:'Bruges boat tour Rozenhoedkaai'},
-        {t:'10:45', tr:'walk', name:'貝居安會院 → 愛之湖', p:'白房子和草地很安靜，愛之湖有天鵝。', q:'Begijnhof Brugge'},
-        {t:'11:30', tr:'walk', name:'De Halve Maan 啤酒廠', p:'布魯日 Zot 啤酒，可以只喝一杯不參觀。附近 The Chocolate Line 買巧克力。', q:'De Halve Maan Brugge'},
+        {ll:[51.2073,3.2263], t:'08:30', tr:'walk', must:true, name:'玫瑰碼頭 早上', p:'布魯日最經典的明信片角度，早上沒人。', q:'Rozenhoedkaai Brugge'},
+        {ll:[51.2085,3.2245], t:'09:00', tr:'walk', must:true, name:'鐘樓 Belfort', p:'366 階，09:00 開，線上買時段票。上面看整個古城。', q:'Belfort Brugge'},
+        {ll:[51.2063,3.2275], t:'10:00', tr:'boat', must:true, name:'運河船', p:'約 30 分鐘，現場排隊買票，3 月到 11 月中有開。', q:'Bruges boat tour Rozenhoedkaai'},
+        {ll:[51.2004,3.2234], t:'10:45', tr:'walk', name:'貝居安會院 → 愛之湖', p:'白房子和草地很安靜，愛之湖有天鵝。', q:'Begijnhof Brugge'},
+        {ll:[51.2033,3.2246], t:'11:30', tr:'walk', name:'De Halve Maan 啤酒廠', p:'布魯日 Zot 啤酒，可以只喝一杯不參觀。附近 The Chocolate Line 買巧克力。', q:'De Halve Maan Brugge'},
         {t:'12:30', tr:'walk', name:'Markt 薯條攤 午餐 → 拿過夜包', p:'鐘樓下的綠色薯條攤。'},
-        {t:'13:30', tr:'sncb', name:'布魯日 → 根特 Sint-Pieters', p:'約 25 分鐘。根特車站離市中心遠，轉電車 1 號到 Korenmarkt，約 15 分鐘。'},
-        {t:'14:15', tr:'walk', must:true, name:'香草河岸 Graslei', p:'聖米歇爾橋上看兩岸的公會房子。', q:'Graslei Gent'},
-        {t:'15:00', tr:'walk', must:true, name:'伯爵城堡 Gravensteen', p:'市中心的中世紀城堡，約 1 小時。', q:'Gravensteen'},
-        {t:'16:15', tr:'walk', must:true, name:'聖巴夫主教座堂 根特祭壇畫', p:'范艾克兄弟的「神祕羔羊」，要另外買票，有 AR 導覽。', q:'Sint-Baafskathedraal Gent'},
-        {t:'17:15', tr:'walk', name:'蔬菜市場 鼻子糖 Cuberdon', p:'Groentenmarkt 的推車，紫色圓錐形覆盆子軟糖，根特限定。', q:'Groentenmarkt Gent'},
+        {ll:[51.0359,3.7106], t:'13:30', tr:'sncb', name:'布魯日 → 根特 Sint-Pieters', p:'約 25 分鐘。根特車站離市中心遠，轉電車 1 號到 Korenmarkt，約 15 分鐘。'},
+        {ll:[51.0545,3.7205], t:'14:15', tr:'walk', must:true, name:'香草河岸 Graslei', p:'聖米歇爾橋上看兩岸的公會房子。', q:'Graslei Gent'},
+        {ll:[51.0573,3.7208], t:'15:00', tr:'walk', must:true, name:'伯爵城堡 Gravensteen', p:'市中心的中世紀城堡，約 1 小時。', q:'Gravensteen'},
+        {ll:[51.0530,3.7265], t:'16:15', tr:'walk', must:true, name:'聖巴夫主教座堂 根特祭壇畫', p:'范艾克兄弟的「神祕羔羊」，要另外買票，有 AR 導覽。', q:'Sint-Baafskathedraal Gent'},
+        {ll:[51.0563,3.7222], t:'17:15', tr:'walk', name:'蔬菜市場 鼻子糖 Cuberdon', p:'Groentenmarkt 的推車，紫色圓錐形覆盆子軟糖，根特限定。', q:'Groentenmarkt Gent'},
         {t:'18:00', tr:'walk', name:'根特晚餐', p:'Patershol 老街區的小餐館。', alt:'根特鬆餅、根特水煮雞 waterzooi。'},
-        {t:'19:30', tr:'sncb', name:'根特 → 安特衛普中央車站', p:'約 50 分鐘。安特衛普車站的大廳很漂亮，轉車時看一下。'},
+        {ll:[51.2172,4.4211], t:'19:30', tr:'sncb', name:'根特 → 安特衛普中央車站', p:'約 50 分鐘。安特衛普車站的大廳很漂亮，轉車時看一下。'},
         {t:'20:30', tr:'euro', book:true, name:'安特衛普 → 阿姆斯特丹', p:'Eurostar 約 1 小時 15 分；比較便宜的城際列車約 2 小時。約 22:00 回到朋友家。'}
       ]
     },
@@ -702,15 +757,15 @@ footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;f
       items:[
         {t:'08:30', tr:'ns', name:'阿姆斯特丹 → 鹿特丹中央車站', p:'城際列車約 1 小時 10 分。Intercity Direct 比較快但要補票。'},
         {t:'09:50', tr:'metro', name:'地鐵到 Blaak', p:'一站。'},
-        {t:'10:00', tr:'walk', must:true, name:'Markthal 市場', p:'馬蹄形大樓，天花板是巨幅蔬果壁畫，裡面邊逛邊吃早午餐。', q:'Markthal Rotterdam'},
-        {t:'10:40', tr:'walk', must:true, name:'方塊屋', p:'就在 Markthal 對面，可以進樣品屋參觀。', q:'Kubuswoningen Rotterdam'},
+        {ll:[51.9200,4.4870], t:'10:00', tr:'walk', must:true, name:'Markthal 市場', p:'馬蹄形大樓，天花板是巨幅蔬果壁畫，裡面邊逛邊吃早午餐。', q:'Markthal Rotterdam'},
+        {ll:[51.9203,4.4907], t:'10:40', tr:'walk', must:true, name:'方塊屋', p:'就在 Markthal 對面，可以進樣品屋參觀。', q:'Kubuswoningen Rotterdam'},
         {t:'11:15', tr:'walk', name:'走到天鵝橋 Erasmusbrug 碼頭', p:'約 15 分鐘。'},
-        {t:'11:30', tr:'boat', must:true, name:'水上巴士 202 → 小孩堤防', p:'約 35 分鐘。10 月底可能換冬季班表，班次變少，先查 waterbus.nl。', q:'Waterbus Erasmusbrug'},
-        {t:'12:15', tr:'walk', must:true, name:'小孩堤防 Kinderdijk', p:'世界遺產，19 座 18 世紀風車排在河道兩旁。步道免費，要進風車博物館才買票（週末約 €18.5）。', q:'Kinderdijk'},
+        {ll:[51.9095,4.4860], t:'11:30', tr:'boat', must:true, name:'水上巴士 202 → 小孩堤防', p:'約 35 分鐘。10 月底可能換冬季班表，班次變少，先查 waterbus.nl。', q:'Waterbus Erasmusbrug'},
+        {ll:[51.8840,4.6390], t:'12:15', tr:'walk', must:true, name:'小孩堤防 Kinderdijk', p:'世界遺產，19 座 18 世紀風車排在河道兩旁。步道免費，要進風車博物館才買票（週末約 €18.5）。', q:'Kinderdijk'},
         {t:'14:30', tr:'boat', name:'水上巴士回鹿特丹'},
         {t:'15:15', tr:'ns', name:'鹿特丹 → 台夫特', p:'火車約 15 分鐘。'},
-        {t:'15:45', tr:'walk', must:true, name:'台夫特 Markt 和新教堂', p:'維梅爾的故鄉，廣場兩端是新教堂和市政廳，運河比阿姆斯特丹安靜。', q:'Markt Delft'},
-        {t:'16:30', tr:'walk', name:'皇家台夫特藍陶', p:'Royal Delft 工廠和博物館，17:00 關。市區也有藍陶小店。', q:'Royal Delft'},
+        {ll:[52.0116,4.3594], t:'15:45', tr:'walk', must:true, name:'台夫特 Markt 和新教堂', p:'維梅爾的故鄉，廣場兩端是新教堂和市政廳，運河比阿姆斯特丹安靜。', q:'Markt Delft'},
+        {ll:[52.0028,4.3667], t:'16:30', tr:'walk', name:'皇家台夫特藍陶', p:'Royal Delft 工廠和博物館，17:00 關。市區也有藍陶小店。', q:'Royal Delft'},
         {t:'17:30', tr:'walk', name:'台夫特運河 看日落', p:'日落約 18:30。'},
         {t:'18:30', tr:'walk', name:'台夫特晚餐', p:'Markt 周邊的餐廳。'},
         {t:'20:00', tr:'ns', name:'台夫特 → 阿姆斯特丹', p:'約 1 小時。'}
@@ -721,14 +776,14 @@ footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;f
       title:'阿姆斯特丹 → 回台灣',
       note:'凌晨時鐘撥慢 1 小時。上午逛花市、吃薯條，中午店開了買伴手禮，傍晚回朋友家拿行李去機場。',
       items:[
-        {t:'09:30', tr:'tram', name:'辛格花市 Bloemenmarkt', p:'運河上的花市，鬱金香球根、木鞋紀念品。', q:'Bloemenmarkt Amsterdam', alt:'球根帶回台灣要有檢疫證明，買包裝上有證明的。'},
-        {t:'10:30', tr:'walk', must:true, name:'Van Wonderen 現做糖漿鬆餅', p:'Kalverstraat 190。現壓 stroopwafel，可以沾巧克力。', q:'Van Wonderen Stroopwafels Kalverstraat'},
-        {t:'11:00', tr:'walk', must:true, name:'Vleminckx 薯條', p:'Voetboogstraat 33，阿姆斯特丹最有名的薯條攤，配美乃滋或沙嗲醬。', q:'Vleminckx de Sausmeester'},
-        {t:'12:00', tr:'walk', name:'買伴手禮', p:'週日商店 12:00 才開。Albert Heijn 超市買 stroopwafel、起司；Henri Willig 起司店可以真空包裝。', q:'Henri Willig Amsterdam'},
+        {ll:[52.3667,4.8913], t:'09:30', tr:'tram', name:'辛格花市 Bloemenmarkt', p:'運河上的花市，鬱金香球根、木鞋紀念品。', q:'Bloemenmarkt Amsterdam', alt:'球根帶回台灣要有檢疫證明，買包裝上有證明的。'},
+        {ll:[52.3685,4.8916], t:'10:30', tr:'walk', must:true, name:'Van Wonderen 現做糖漿鬆餅', p:'Kalverstraat 190。現壓 stroopwafel，可以沾巧克力。', q:'Van Wonderen Stroopwafels Kalverstraat'},
+        {ll:[52.3672,4.8897], t:'11:00', tr:'walk', must:true, name:'Vleminckx 薯條', p:'Voetboogstraat 33，阿姆斯特丹最有名的薯條攤，配美乃滋或沙嗲醬。', q:'Vleminckx de Sausmeester'},
+        {ll:[52.3712,4.8919], t:'12:00', tr:'walk', name:'買伴手禮', p:'週日商店 12:00 才開。Albert Heijn 超市買 stroopwafel、起司；Henri Willig 起司店可以真空包裝。', q:'Henri Willig Amsterdam'},
         {t:'13:30', tr:'walk', name:'生鯡魚攤 午餐', p:'抓著尾巴整條吞，或夾麵包吃。', alt:'不敢吃生的：Foodhallen 美食街。'},
         {t:'15:30', tr:'tram', name:'回朋友家拿行李'},
         {t:'16:45', tr:'ns', name:'阿姆斯特丹 → 史基浦', p:'火車約 15 分鐘。'},
-        {t:'17:20', tr:'plane', name:'抵達史基浦，報到', p:'回程 KLM 執飛。有買退稅商品先去 Global Blue 退稅。'},
+        {ll:[52.3105,4.7683], t:'17:20', tr:'plane', name:'抵達史基浦，報到', p:'回程 KLM 執飛。有買退稅商品先去 Global Blue 退稅。'},
         {t:'20:20', tr:'plane', name:'CI9388 起飛', p:'10/26（一）15:55 到桃園。'}
       ]
     }
@@ -793,12 +848,208 @@ footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;f
     ]}
   ];
 
-  var state = {day:0};
-  try { var s = JSON.parse(localStorage.getItem('nlbe-view')||'{}'); if (s.day in DAYS) state.day = s.day; } catch(e){}
+  var state = {day:0, mv:'route'};
+  try { var s = JSON.parse(localStorage.getItem('nlbe-view')||'{}'); if (s.day in DAYS) state.day = s.day; if (s.mv in {route:1,stops:1,g:1}) state.mv = s.mv; } catch(e){}
   var hm = location.hash.match(/^#day([1-7])$/); if (hm) state.day = +hm[1] - 1;
 
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   var CTRY = {nl:['荷蘭','c-nl'], be:['比利時','c-be']};
+
+  /* ── 地圖 ──────────────────────────────────────────────
+     底圖：Natural Earth 10m 國界／湖泊／河流，簡化後照經緯度畫（等距圓柱投影，北緯 52 度校正）。
+     行程每一站的 ll:[緯度, 經度] 是大概位置，用來畫「景點」圖和編號。                      */
+  var BASE = {"lon0": 2.45, "lat1": 53.6, "kx": 125.0, "ky": 203.0337, "nl": "M593.1 72.1 593.2 84.3 590.2 93.9 590.3 96.3 591.9 100.4 593.0 114.9 592.9 122.2 591.7 128.7 589.0 135.5 578.7 151.4 576.5 157.6 575.4 164.3 573.3 193.4 571.1 197.8 564.7 195.6 558.6 196.5 551.9 194.5 540.1 194.7 535.9 196.0 531.5 199.2 532.5 201.3 531.7 206.5 536.7 211.2 529.8 214.7 527.7 214.9 529.3 218.1 530.6 228.3 533.1 231.1 536.4 232.7 546.3 234.1 552.8 236.6 556.3 237.2 562.7 236.0 565.4 233.2 573.0 245.5 574.8 250.7 573.7 258.1 570.3 267.0 570.2 270.7 572.4 277.0 572.0 278.0 566.5 281.4 562.2 287.7 559.7 290.0 554.4 292.3 551.9 294.8 549.2 300.5 547.6 301.9 539.5 302.8 537.5 304.0 535.4 306.2 532.7 311.2 528.7 312.6 527.9 314.7 528.1 317.8 541.0 324.6 544.9 329.0 545.1 332.9 542.5 334.8 539.6 340.0 536.7 343.5 533.3 345.3 522.3 345.7 509.8 349.9 501.6 355.6 499.1 355.6 491.1 353.3 492.1 357.8 491.6 359.9 486.9 361.2 486.5 358.0 484.5 356.8 479.7 356.1 476.8 352.0 471.9 352.8 467.7 351.0 463.7 347.7 459.6 345.8 455.4 348.1 461.6 354.3 463.3 356.9 454.2 354.6 449.2 355.9 444.8 358.8 437.3 360.8 435.2 362.3 434.8 364.1 437.6 366.3 439.3 370.2 439.0 374.3 436.3 377.1 436.2 379.3 441.0 379.7 445.3 382.5 446.5 383.8 444.8 389.6 447.7 393.3 456.1 397.0 454.0 404.5 454.6 407.0 467.9 424.5 469.4 434.8 467.8 446.9 469.7 449.2 467.9 457.9 466.7 459.7 462.2 463.3 455.8 475.3 451.9 480.9 450.8 484.9 450.5 489.4 451.4 493.2 454.3 494.9 460.5 490.5 463.4 491.5 459.5 494.5 462.2 497.0 460.3 499.5 453.2 503.4 441.6 512.7 436.0 521.6 433.7 521.9 428.8 517.3 425.3 519.2 426.0 524.0 427.9 529.8 428.1 534.9 434.7 532.4 439.7 533.8 444.2 533.2 444.5 534.3 443.2 537.7 443.7 542.2 447.6 545.2 451.7 546.7 450.6 549.9 451.6 554.1 450.8 557.8 449.4 559.5 446.6 559.3 444.9 560.3 443.8 562.3 444.2 565.9 443.5 568.3 441.7 570.1 439.8 569.6 440.4 572.2 443.4 576.0 443.1 578.7 440.6 579.1 431.5 578.8 428.7 577.9 417.9 578.2 412.8 573.9 409.7 577.8 407.1 577.8 404.8 576.4 406.3 569.4 401.7 567.5 398.8 565.4 396.8 562.3 396.5 557.8 405.6 547.4 409.0 545.8 414.3 536.1 411.8 535.3 409.0 536.1 414.0 528.1 415.9 523.1 414.3 520.7 415.2 516.1 416.2 515.4 417.7 516.7 418.6 515.4 420.2 511.2 419.4 508.3 422.1 508.2 424.5 506.9 421.7 503.8 422.1 501.5 423.8 499.7 422.4 496.1 420.3 495.9 416.4 496.9 412.1 491.8 410.1 490.6 401.1 491.5 396.9 487.9 389.8 485.7 386.9 483.2 385.6 474.7 383.3 471.6 380.4 469.7 377.7 469.4 370.0 474.4 367.4 475.4 352.6 474.7 347.9 475.9 345.7 475.4 345.6 468.1 343.4 465.3 336.3 465.5 334.1 464.3 331.6 456.7 327.3 451.8 326.5 449.9 326.9 445.5 328.3 442.2 328.7 438.8 326.3 434.1 322.2 431.1 320.3 431.6 318.2 437.2 313.4 444.4 310.2 447.6 307.5 448.3 300.4 445.4 291.7 445.1 289.0 444.0 289.7 441.5 291.1 441.3 296.6 443.9 295.7 440.4 297.0 434.4 296.7 431.3 295.4 429.6 291.1 427.3 289.3 427.1 285.2 429.3 275.5 441.4 272.5 443.0 266.6 442.1 261.3 442.6 258.9 440.9 260.2 436.3 260.4 433.0 259.4 431.3 254.1 431.6 247.4 434.1 240.9 438.0 242.4 439.7 241.2 444.7 245.8 452.0 245.2 455.5 242.8 456.7 237.0 456.4 230.0 453.0 226.4 452.9 224.9 449.9 224.4 443.7 223.1 442.8 221.6 444.7 218.9 445.6 207.6 445.3 202.5 442.8 195.6 436.7 193.6 435.9 188.4 435.3 186.6 436.4 181.5 445.7 172.1 448.5 167.4 444.2 159.8 440.4 155.0 435.7 153.0 435.4 147.8 437.4 145.0 437.5 137.9 435.9 135.7 434.7 130.6 426.2 126.5 422.5 125.1 420.3 124.6 417.0 125.9 415.2 138.8 407.2 172.4 403.5 175.1 403.9 179.0 406.9 182.0 412.3 177.7 415.1 177.7 416.3 189.7 417.6 195.7 420.1 200.9 424.7 205.0 434.8 206.9 437.4 209.8 438.3 216.4 437.4 218.8 438.6 229.2 437.0 230.8 432.4 229.8 428.0 227.2 424.7 223.7 422.6 218.1 421.6 212.9 419.3 205.2 419.3 202.2 417.4 192.3 408.0 202.2 403.9 213.4 404.5 216.7 405.5 219.7 408.0 219.1 404.2 217.5 402.7 210.7 401.9 208.5 399.8 207.9 398.1 207.8 391.7 209.5 389.9 211.6 389.0 215.9 388.6 211.4 385.0 202.7 382.3 200.9 379.6 200.1 372.9 198.0 368.7 191.4 363.4 189.1 365.2 185.9 366.2 182.7 366.2 180.2 366.9 179.8 367.7 177.7 367.8 176.5 362.2 180.2 359.7 188.0 357.3 189.1 355.8 191.5 355.7 195.7 356.6 199.7 358.6 203.5 356.6 197.8 348.8 197.7 346.0 199.2 343.4 198.8 340.3 195.0 328.9 195.7 327.4 196.6 326.0 202.4 327.3 207.2 326.5 211.5 323.7 229.3 301.9 244.6 279.5 257.3 256.6 264.8 234.5 265.9 227.2 268.4 222.0 273.7 182.6 277.4 163.1 282.7 149.6 284.6 134.3 285.5 130.2 286.9 128.4 294.6 129.6 295.9 128.4 296.8 129.9 294.9 136.1 297.8 139.8 303.0 141.3 307.9 141.0 316.0 134.9 323.6 133.3 328.5 131.2 357.8 105.0 363.6 103.7 366.2 102.1 368.7 97.0 372.1 83.2 374.7 77.0 381.8 69.6 386.4 67.7 392.7 60.3 401.2 58.5 405.6 54.8 425.6 46.9 430.1 43.8 433.0 43.6 441.4 39.4 478.0 38.0 482.7 40.8 486.9 38.0 505.5 32.7 535.0 28.3 547.4 30.3 550.0 31.5 552.1 33.6 556.3 50.4 560.0 52.8 562.3 55.6 566.3 56.9 571.3 59.7 573.5 59.0 574.5 60.1 576.0 60.5 579.4 59.0 579.4 60.3 577.9 61.8 578.8 67.7 582.6 69.8 591.7 72.1ZM112.4 451.7 136.4 443.3 144.3 448.5 156.5 452.0 160.5 455.7 163.2 456.8 168.2 456.8 173.0 458.2 176.0 457.8 188.2 452.4 189.9 450.4 190.6 446.3 191.8 444.5 194.5 444.7 197.4 445.8 199.2 447.0 202.5 452.7 206.9 453.6 209.0 454.9 213.3 455.3 216.3 451.3 218.7 451.5 221.4 453.2 219.7 460.8 214.8 467.6 208.6 472.6 193.1 480.5 187.4 485.1 184.6 486.0 169.8 486.2 168.3 485.5 166.4 483.2 165.8 476.2 163.4 474.6 144.9 468.9 133.0 470.8 131.7 472.3 131.4 479.1 125.5 480.0 121.5 479.6 117.7 477.8 114.7 474.4 112.9 469.3 113.5 459.5ZM198.3 388.6 203.5 390.1 205.9 391.8 206.2 395.1 204.9 397.1 202.8 398.6 191.0 401.3 188.8 401.2 184.1 399.5 181.4 397.5 179.4 392.2 177.5 390.6 172.6 388.6 169.9 385.9 168.2 385.7 164.4 390.1 158.8 390.5 156.3 389.7 154.6 387.2 154.9 380.7 159.5 377.7 170.5 376.0 174.2 377.1 189.0 378.0 191.0 379.6 197.1 387.6ZM305.3 99.3 305.3 100.5 307.9 100.5 305.4 106.4 301.9 111.6 296.0 116.4 293.2 121.8 289.0 123.0 284.6 121.2 282.2 116.0 283.0 110.7 285.5 104.7 288.6 99.8 294.5 94.8 300.5 83.7 304.5 83.9 305.3 86.1 304.5 88.1 307.5 94.5 307.5 97.7ZM303.6 77.0 308.9 70.3 317.1 62.9 325.6 58.1 331.9 59.0 331.9 60.3 328.5 60.3 323.3 62.6 313.4 72.0 310.7 75.9 307.5 78.7ZM371.7 34.4 373.4 33.2 391.9 29.7 389.0 33.6 385.5 34.8 378.2 35.1 379.0 38.0 377.3 38.9 372.1 39.3 362.1 42.8 344.8 50.2 341.2 50.1 339.7 47.1 341.1 43.6 347.8 41.3 350.0 39.3 352.9 39.4 369.7 36.0ZM403.0 26.8 433.0 25.6 438.1 28.2 425.7 31.0 412.8 31.0 403.6 34.5 400.4 33.8 398.3 30.7 399.0 27.7 401.1 26.0ZM470.2 18.5 482.6 17.4 486.1 18.5 486.1 19.9 484.4 19.9 462.9 26.6 460.4 29.7 459.6 27.8 460.4 26.8 459.1 24.0 462.2 21.3 466.9 19.3ZM498.9 8.8 500.6 8.5 507.5 11.4 506.5 11.7 505.8 13.0 499.1 10.2Z", "be": "M9.0 510.1 11.5 508.2 16.2 506.6 33.2 493.5 59.2 477.8 84.4 461.0 112.4 451.7 113.5 459.5 112.9 469.3 114.7 474.4 117.7 477.8 121.5 479.6 125.5 480.0 131.4 479.1 131.7 472.3 133.0 470.8 144.9 468.9 163.4 474.6 165.8 476.2 166.4 483.2 168.3 485.5 169.8 486.2 184.6 486.0 187.4 485.1 193.1 480.5 208.6 472.6 214.8 467.6 219.7 460.8 221.4 453.2 223.9 455.5 225.8 461.2 231.6 467.8 232.3 470.3 230.8 473.6 232.3 472.8 235.1 467.8 229.9 465.1 229.1 456.8 226.4 452.9 230.0 453.0 237.0 456.4 242.8 456.7 245.2 455.5 245.8 452.0 241.2 444.7 242.4 439.7 240.9 438.0 247.4 434.1 254.1 431.6 259.4 431.3 260.4 433.0 260.2 436.3 258.9 440.9 261.3 442.6 266.6 442.1 272.5 443.0 275.5 441.4 285.2 429.3 289.3 427.1 291.1 427.3 295.4 429.6 296.7 431.3 297.0 434.4 295.7 440.4 296.6 443.9 291.1 441.3 289.7 441.5 289.0 444.0 291.7 445.1 300.4 445.4 307.5 448.3 310.2 447.6 313.4 444.4 318.2 437.2 320.3 431.6 322.2 431.1 326.3 434.1 328.7 438.8 328.3 442.2 326.9 445.5 326.5 449.9 327.3 451.8 331.6 456.7 334.1 464.3 336.3 465.5 343.4 465.3 345.6 468.1 345.7 475.4 347.9 475.9 352.6 474.7 367.4 475.4 370.0 474.4 377.7 469.4 380.4 469.7 383.3 471.6 385.6 474.7 386.9 483.2 389.8 485.7 396.9 487.9 401.1 491.5 410.1 490.6 412.1 491.8 416.4 496.9 420.3 495.9 422.4 496.1 423.8 499.7 422.1 501.5 421.7 503.8 424.5 506.9 422.1 508.2 419.4 508.3 420.2 511.2 418.6 515.4 417.7 516.7 416.2 515.4 415.2 516.1 414.3 520.7 415.9 523.1 414.0 528.1 409.0 536.1 411.8 535.3 414.3 536.1 409.0 545.8 405.6 547.4 396.5 557.8 396.8 562.3 398.8 565.4 401.7 567.5 406.3 569.4 404.8 576.4 407.1 577.8 409.7 577.8 412.8 573.9 417.9 578.2 428.7 577.9 431.5 578.8 440.6 579.1 443.1 578.7 443.0 580.2 445.1 581.3 444.7 585.4 445.2 587.1 453.9 586.1 456.3 588.5 463.9 600.5 462.2 601.6 463.7 604.6 466.3 606.0 474.9 606.2 475.2 607.4 472.9 611.7 466.1 616.8 463.8 620.6 465.9 623.3 465.1 625.8 467.6 626.3 466.6 628.1 469.6 632.2 475.7 630.5 478.2 631.8 485.9 633.3 484.5 634.7 484.2 636.3 485.2 640.2 487.6 642.9 487.6 646.3 485.8 653.8 486.0 656.2 490.3 664.0 490.6 666.9 489.0 668.6 485.7 669.2 481.2 668.2 479.5 669.2 477.4 672.8 477.7 676.6 475.4 678.8 467.5 681.6 462.1 687.5 464.0 690.3 212.7 690.3 214.7 685.8 218.9 681.9 219.2 679.8 216.9 677.0 214.1 675.5 212.5 676.2 212.6 678.9 211.7 679.8 209.4 678.7 206.0 671.1 200.7 667.1 196.6 662.3 194.2 661.1 191.5 661.4 183.6 664.8 180.7 664.9 173.8 660.8 168.6 660.2 163.1 660.6 160.4 662.5 155.9 670.4 151.5 666.1 149.3 640.5 147.3 636.6 144.8 634.2 139.2 632.1 131.1 632.1 129.6 630.9 131.0 627.0 130.2 625.9 128.4 625.4 126.6 625.5 122.4 629.0 116.9 631.1 113.9 631.5 111.7 630.8 104.6 626.5 102.6 623.9 102.0 621.6 101.8 615.2 98.5 603.7 97.5 597.9 99.2 594.5 97.8 589.6 96.8 587.7 93.4 586.9 92.4 585.7 87.0 574.8 84.9 572.7 81.7 571.7 65.2 577.1 62.3 578.9 60.0 581.4 56.3 588.2 54.6 589.5 42.1 584.1 39.8 582.0 36.7 575.4 32.1 570.8 30.2 566.7 28.6 565.8 24.1 566.0 21.3 565.1 19.6 561.4 17.1 559.3 18.3 554.8 15.9 545.9 16.6 544.0 20.2 539.8 19.8 535.8 13.4 527.6 12.1 523.7 10.9 514.8Z", "x": "M618.8 690.3 464.0 690.3 462.1 687.5 467.5 681.6 475.4 678.8 477.7 676.6 477.4 672.8 479.5 669.2 481.2 668.2 485.7 669.2 489.0 668.6 490.6 666.9 490.3 664.0 486.0 656.2 485.8 653.8 487.6 646.3 487.6 642.9 485.2 640.2 484.2 636.3 484.5 634.7 485.9 633.3 478.2 631.8 475.7 630.5 469.6 632.2 466.6 628.1 467.6 626.3 465.1 625.8 465.9 623.3 463.8 620.6 466.1 616.8 472.9 611.7 475.2 607.4 474.9 606.2 466.3 606.0 463.7 604.6 462.2 601.6 463.9 600.5 456.3 588.5 453.9 586.1 445.2 587.1 444.7 585.4 445.1 581.3 442.8 579.8 443.4 576.0 440.4 572.2 439.8 569.6 441.7 570.1 443.5 568.3 444.2 565.9 443.8 562.3 444.9 560.3 446.6 559.3 449.4 559.5 450.8 557.8 451.6 554.1 450.6 549.9 451.7 546.7 447.6 545.2 443.7 542.2 443.2 537.7 444.5 534.3 444.2 533.2 439.7 533.8 434.7 532.4 428.1 534.9 427.9 529.8 426.0 524.0 425.3 519.2 428.8 517.3 433.7 521.9 436.0 521.6 441.6 512.7 453.2 503.4 460.3 499.5 462.2 497.0 459.5 494.5 463.4 491.5 460.5 490.5 454.3 494.9 451.4 493.2 450.5 489.4 450.8 484.9 451.9 480.9 455.8 475.3 462.2 463.3 466.7 459.7 467.9 457.9 469.7 449.2 467.8 446.9 469.4 434.8 467.9 424.5 454.6 407.0 454.0 404.5 456.1 397.0 447.7 393.3 444.8 389.6 446.5 383.8 445.3 382.5 441.0 379.7 436.2 379.3 436.3 377.1 439.0 374.3 439.3 370.2 437.6 366.3 434.8 364.1 435.2 362.3 437.3 360.8 444.8 358.8 449.2 355.9 454.2 354.6 463.3 356.9 461.6 354.3 455.4 348.1 459.6 345.8 463.7 347.7 467.7 351.0 471.9 352.8 476.8 352.0 479.7 356.1 484.5 356.8 486.5 358.0 486.9 361.2 491.6 359.9 492.1 357.8 491.1 353.3 499.1 355.6 501.6 355.6 509.8 349.9 522.3 345.7 533.3 345.3 536.7 343.5 539.6 340.0 542.5 334.8 545.1 332.9 544.9 329.0 541.0 324.6 528.1 317.8 527.9 314.7 528.7 312.6 532.7 311.2 535.4 306.2 537.5 304.0 539.5 302.8 547.6 301.9 549.2 300.5 551.9 294.8 554.4 292.3 559.7 290.0 562.2 287.7 566.5 281.4 572.0 278.0 572.4 277.0 570.2 270.7 570.3 267.0 573.7 258.1 574.8 250.7 573.0 245.5 565.4 233.2 562.7 236.0 556.3 237.2 552.8 236.6 546.3 234.1 536.4 232.7 533.1 231.1 530.6 228.3 529.3 218.1 527.7 214.9 529.8 214.7 536.7 211.2 531.7 206.5 532.5 201.3 531.5 199.2 535.9 196.0 540.1 194.7 551.9 194.5 558.6 196.5 564.7 195.6 571.1 197.8 573.3 193.4 575.4 164.3 576.5 157.6 578.7 151.4 589.0 135.5 591.7 128.7 592.9 122.2 593.0 114.9 591.9 100.4 590.3 96.3 590.2 93.9 593.2 84.3 593.1 72.1 595.7 69.9 597.9 66.3 598.4 63.8 597.4 61.6 600.6 56.9 602.3 56.1 605.2 56.1 607.9 56.7 614.6 60.3 611.6 56.0 606.6 54.3 578.2 53.3 573.5 51.0 571.7 45.4 571.7 30.4 572.2 26.9 576.2 15.9 583.7 17.0 586.5 12.8 586.2 10.2 585.1 8.7 581.5 7.0 579.9 5.3 579.6 2.7 581.4 0.4 585.4 -2.3 597.0 -13.5 606.9 -17.2 618.8 -18.5ZM543.5 -0.9 534.1 1.9 534.1 3.1 536.5 4.4 538.3 7.5 534.5 4.6 530.6 6.0 528.4 4.9 526.7 2.6 526.2 0.2 527.6 -0.9 537.2 -3.7 541.8 -4.1ZM553.0 -14.8 557.6 -17.0 574.6 -19.1 579.4 -17.7ZM585.4 -21.9 591.1 -25.2 597.9 -26.3 612.0 -26.0 611.9 -24.8 605.7 -22.5 590.4 -20.6ZM9.0 510.1 10.9 514.8 12.1 523.7 13.4 527.6 19.8 535.8 20.2 539.8 16.6 544.0 15.9 545.9 18.3 554.8 17.1 559.3 19.6 561.4 21.3 565.1 24.1 566.0 28.6 565.8 30.2 566.7 32.1 570.8 36.7 575.4 39.8 582.0 42.1 584.1 54.6 589.5 56.3 588.2 60.0 581.4 62.3 578.9 65.2 577.1 81.7 571.7 84.9 572.7 87.0 574.8 92.4 585.7 93.4 586.9 96.8 587.7 97.8 589.6 99.2 594.5 97.5 597.9 98.5 603.7 101.8 615.2 102.0 621.6 102.6 623.9 104.6 626.5 111.7 630.8 113.9 631.5 116.9 631.1 122.4 629.0 126.6 625.5 128.4 625.4 130.2 625.9 131.0 627.0 129.6 630.9 131.1 632.1 139.2 632.1 144.8 634.2 147.3 636.6 149.3 640.5 151.5 666.1 155.9 670.4 160.4 662.5 163.1 660.6 168.6 660.2 173.8 660.8 180.7 664.9 183.6 664.8 191.5 661.4 194.2 661.1 196.6 662.3 200.7 667.1 206.0 671.1 209.4 678.7 211.7 679.8 212.6 678.9 212.5 676.2 214.1 675.5 216.9 677.0 219.2 679.8 218.9 681.9 214.7 685.8 212.7 690.3 -18.7 690.3 -18.7 516.9 -15.7 515.7 -8.2 516.7 2.0 513.9 8.9 510.1Z", "lk": "M471.1 48.0 474.6 48.5 476.6 50.4 475.2 52.5 471.1 52.8 462.9 51.9 462.1 49.8 464.7 40.3 466.8 39.2 469.6 40.0 472.4 42.1 470.2 43.7 468.1 42.1 468.2 46.6ZM427.5 215.2 427.8 223.0 426.3 227.8 418.9 239.0 412.1 245.0 407.8 247.2 400.5 249.4 396.7 252.5 391.0 259.3 386.9 268.9 385.4 270.4 374.7 273.1 369.3 272.6 363.9 270.0 352.3 261.6 341.4 261.6 332.8 256.3 322.6 254.2 314.8 249.5 316.5 248.1 316.5 246.6 318.3 246.9 319.9 248.1 319.9 246.6 321.9 248.1 324.0 242.8 328.2 239.5 330.2 235.7 328.2 234.6 326.5 231.2 325.0 230.0 328.5 228.7 327.6 225.8 330.1 223.2 329.2 218.1 325.0 209.1 323.3 203.1 323.1 197.9 325.0 194.5 329.4 193.8 332.7 195.1 335.8 197.9 339.5 196.9 347.1 192.2 349.1 189.9 350.8 185.0 352.6 183.4 356.8 181.3 355.5 174.0 354.6 172.9 348.3 170.1 346.3 170.0 343.1 170.9 340.0 173.4 335.8 170.1 334.1 167.4 333.1 150.0 326.9 137.5 324.3 135.3 329.5 133.2 334.9 129.9 354.7 112.8 365.3 106.2 367.5 112.4 369.9 115.3 370.5 117.8 369.6 122.8 370.8 125.1 371.3 128.4 370.8 131.7 368.7 133.9 370.4 137.2 364.5 143.1 364.9 146.5 370.1 150.8 374.0 151.8 382.0 152.1 388.4 154.9 390.5 154.6 394.5 152.1 398.4 151.3 407.5 153.8 409.0 154.9 404.5 155.8 400.8 158.4 397.7 162.4 395.2 167.5 393.3 181.0 393.5 188.9 397.3 193.6 401.3 200.7 403.3 201.3 419.9 200.4 422.1 200.9 423.8 202.2 425.1 204.4 426.0 207.7ZM426.0 222.0 426.1 218.0 423.6 209.1 403.8 204.3 400.5 200.7 398.2 202.5 391.0 204.9 383.3 211.8 379.5 211.8 378.6 212.6 375.6 220.2 373.9 221.6 369.2 223.5 363.6 228.7 354.2 232.4 348.9 237.7 341.1 241.9 335.4 246.6 337.9 255.0 340.5 256.5 348.3 256.5 356.8 259.7 360.8 261.9 368.3 267.9 371.7 269.2 379.9 268.9 384.3 267.2 387.0 263.4 387.7 258.4 386.7 252.2 390.2 250.3 395.8 248.6 398.5 244.7 400.0 243.8 416.4 238.4 419.7 235.2 424.4 227.2Z", "rv": "M426.0 207.8 428.4 206.9 432.5 209.2 440.5 219.1 445.9 219.1 447.6 221.1 450.0 222.3 451.7 225.5 455.7 229.8 457.7 235.6 460.3 239.3 460.6 242.7 459.3 244.8 458.8 247.6 453.9 249.6 454.7 251.9 453.5 253.6 452.3 259.5 454.5 262.8 457.1 264.0 459.3 269.9 459.3 272.8 461.8 274.3 461.5 277.1 462.0 278.1 463.7 279.1 465.8 276.8 467.4 276.7 467.0 283.1 468.0 292.6 467.8 298.5 469.5 302.4 469.7 305.6 468.0 307.6 459.0 312.3 458.3 315.1 459.0 317.4 461.2 316.3 463.2 317.0 463.6 319.0 462.2 321.8 455.6 325.3 453.2 323.8 450.5 323.4 443.9 326.9 443.0 330.1 439.3 330.5 436.2 333.2M447.6 349.3 446.8 345.9 439.7 340.2 437.7 335.0 429.5 327.4 426.5 330.3 419.2 330.3 416.7 333.1 411.6 331.2 397.0 335.7 391.5 334.4 381.9 328.5 376.5 327.4 371.3 330.2 366.6 328.9 363.8 329.5 360.1 332.4M360.1 332.4 357.5 333.1 350.5 329.1 348.6 329.5 346.4 331.3 343.4 331.9 340.3 331.4 338.0 330.2 335.1 325.7 331.8 324.1 326.7 326.3 322.5 330.1 317.3 328.9 313.1 331.5 308.3 335.7 300.1 335.2 297.6 335.7 290.8 340.6 286.3 341.9 278.9 345.5 268.1 345.5 257.4 341.4 251.4 344.0 236.4 346.0 232.4 345.5 228.4 342.7 223.5 341.4 209.7 328.5 206.0 327.1M618.6 639.6 617.2 639.7 610.3 632.1 602.4 615.8 595.4 610.0 594.4 598.7 590.6 589.0 582.0 580.7 579.8 575.9 574.2 572.5 572.3 567.4 565.7 560.4 567.0 557.2 573.2 553.3 575.2 550.1 567.0 547.8 565.7 546.5 564.1 539.5 564.5 537.5 566.7 535.5 567.4 533.4 567.0 531.9 564.1 529.0 564.5 522.2 562.6 521.1 555.5 513.9 550.3 512.4 550.2 510.3 553.0 507.5 553.5 504.8 553.2 503.4 549.9 502.0 550.3 497.1 549.5 495.5 546.9 495.7 545.1 497.2 544.0 497.2 542.9 490.6 541.2 490.3 538.7 491.1 535.8 490.1 534.8 488.0 534.3 481.8 535.4 480.5 538.5 482.0 539.6 481.1 540.0 479.7 538.3 476.9 531.7 472.9 531.9 469.9 534.8 464.8 535.0 461.7 525.5 454.8 528.1 451.2 534.4 450.1 535.8 448.5 536.2 445.3 535.3 442.6 532.3 438.6 533.8 434.0 533.4 432.4 529.9 431.4 529.4 430.4 530.6 427.6 533.7 425.0 532.8 422.6 529.0 418.6 528.1 416.3 529.5 413.2 525.7 411.7 517.8 410.8 518.0 407.2 517.1 400.0 518.8 397.8 517.0 394.0 511.8 394.0 505.2 392.1 503.6 390.8 500.2 385.0 498.3 383.0 495.5 381.7 496.3 377.5 494.7 374.9 486.5 372.4 482.7 364.9 478.5 361.2 454.2 354.5 448.1 349.4 445.5 348.1 443.2 348.3 440.6 353.8 436.9 352.5 434.9 349.9 431.7 351.3 426.2 355.1 424.2 354.7 420.4 352.0 417.6 351.2 414.2 347.7 408.6 346.3 386.6 345.0 376.5 346.8 372.7 350.3 365.5 361.8 360.9 363.4 356.8 359.4 341.3 362.2 330.2 359.4 316.9 360.7M316.9 360.7 310.6 359.3 307.4 359.4 302.5 363.8 299.4 364.8 292.5 364.9 286.2 370.7 284.4 374.2 278.2 381.8M244.1 384.1 234.2 379.9 213.8 365.3 203.5 356.6M615.7 689.5 616.9 687.2 618.5 686.3M613.6 257.0 611.3 251.5 612.9 248.1 611.2 248.1 612.0 245.3 609.5 245.3 610.4 240.1 609.5 239.7 611.2 238.3 611.2 237.0 607.8 230.9 605.8 225.1 606.0 217.4 603.4 215.9 602.7 214.4 603.4 211.8 601.7 210.6 603.4 210.6 603.4 209.0 600.8 207.3 600.3 205.7 600.9 203.5 599.1 202.2 601.0 198.8 600.0 195.1 600.0 193.8 600.9 193.8 600.9 192.4 600.0 192.4 600.0 191.0 601.7 189.7 603.5 184.8 605.2 182.6 602.6 179.6 601.7 174.9 600.0 164.6 601.6 162.0 601.0 160.9 599.1 160.5 600.2 158.2 603.6 156.1 607.8 146.8 605.9 140.5 605.2 133.9 608.7 116.6 607.8 111.6 604.2 108.0 605.2 102.7 607.1 100.6 614.0 97.9 613.7 93.7 614.6 91.9 614.8 86.7 618.0 83.2M618.3 70.3 617.2 61.1 616.0 60.3 614.6 60.3M103.1 685.7 108.7 674.2 113.4 668.7 116.5 666.8 119.5 666.0 124.9 666.9 127.7 666.6 130.2 664.4 135.2 652.6 142.1 641.8 138.4 637.2 123.5 627.6 122.5 625.1 122.4 622.1 123.1 613.2 116.6 605.5 113.3 597.3 112.5 592.0 114.7 585.3 120.3 579.2 142.9 562.0 148.4 552.7 153.4 548.3 154.2 546.0 150.8 541.5 150.7 538.6 154.0 536.8 159.8 529.1 163.2 518.6 166.2 519.2 171.6 526.1 174.6 527.3 177.9 526.1 192.5 524.8 196.4 525.1 199.0 522.5 200.6 518.7 202.1 517.3 203.7 517.0 207.5 519.1 209.0 518.8 212.9 515.8 216.2 519.6 217.7 518.8 218.3 516.8 216.8 510.3 216.9 506.7 220.7 503.2 228.3 502.7 233.2 501.1 234.8 497.9 235.4 493.4 237.3 488.0 242.7 482.2 243.2 480.3 232.3 473.3M405.1 575.0 406.8 563.5 406.3 555.4 403.9 551.3 406.4 547.2 409.0 545.8 414.2 536.1 411.8 535.3 409.0 536.1 413.9 528.0 415.9 523.0 414.2 520.7 415.1 516.0 416.1 515.4 417.6 516.7 418.5 515.4 420.2 511.1 419.3 508.2 422.0 508.2 424.4 506.8 421.6 503.7 422.0 501.4 426.2 497.1 428.1 496.9 431.2 493.0 437.0 494.0 438.1 491.6 437.0 491.2 435.5 488.8 439.9 488.6 441.1 487.2 442.5 481.4 445.7 477.2 444.9 473.6 447.6 473.0 451.8 467.8 456.3 465.2 460.4 455.3 464.0 452.4 464.5 448.3 462.9 443.5 466.4 430.3 466.4 424.7 462.0 422.6 460.3 417.4 458.0 415.5 450.4 412.1 447.0 401.9 444.5 397.7 441.5 394.7 442.3 392.8 440.4 390.6 438.7 383.3 436.8 381.7 431.7 381.2 429.8 379.9 428.7 377.4 429.1 375.0 426.6 373.7 413.7 373.1 405.0 367.0 401.4 365.4 399.1 360.7 393.5 359.4 385.6 360.6 381.3 358.4 373.9 362.2 368.9 361.8 366.4 363.1 364.7 370.5 363.1 373.1 358.5 376.2 329.9 379.4 326.4 381.7 306.7 381.8 303.6 380.3 302.1 381.4 297.1 383.0M215.9 388.6 221.0 393.0 228.8 396.3 235.5 394.5 240.3 391.1 244.1 384.1 257.1 386.7 261.9 386.6 274.2 381.9 286.3 380.6 289.0 380.6 295.2 383.2 297.6 383.3M297.6 687.8 299.1 687.6 302.9 689.6 303.6 687.0 306.8 685.6 306.2 682.4 307.0 681.3 309.6 680.9 308.1 674.7 306.5 673.2 307.0 668.1 304.3 663.1 301.1 659.8 302.5 659.1 303.1 658.0 304.0 650.1 304.9 648.0 305.0 645.4 302.3 639.6 303.6 636.3 313.5 632.1 318.6 634.7 319.8 634.2 321.6 630.7 324.1 629.5 332.3 629.2 334.9 628.4 343.0 623.8 349.3 624.2 352.2 620.9 355.4 620.9 357.6 622.7 366.9 614.1 370.4 612.1 376.5 610.6 381.1 607.0 388.8 607.0 390.2 605.9 392.7 598.6 397.0 597.3 398.1 596.3 399.5 593.2 404.8 586.0 406.2 581.5 404.7 577.8 405.1 575.0"};
+  function bxy(la, lo){ return [(lo - BASE.lon0) * BASE.kx, (BASE.lat1 - la) * BASE.ky]; }
+  var CITY = {
+    ams:{b:'阿姆斯特丹', la:52.3731, lo:4.8922, an:'start', dx:12, dy:7},
+    sch:{b:'史基浦機場', la:52.3105, lo:4.7683, an:'end',   dx:-11, dy:18},
+    zaan:{b:'風車村',    la:52.4740, lo:4.8180, an:'end',   dx:-11, dy:2},
+    gieth:{b:'羊角村',   la:52.7400, lo:6.0790, an:'start', dx:12, dy:7},
+    rot:{b:'鹿特丹',     la:51.9225, lo:4.4792, an:'end',   dx:-10, dy:22},
+    kin:{b:'小孩堤防',   la:51.8840, lo:4.6390, an:'start', dx:11, dy:16},
+    dlf:{b:'台夫特',     la:52.0116, lo:4.3594, an:'end',   dx:-11, dy:2},
+    ant:{b:'安特衛普',   la:51.2194, lo:4.4025, an:'start', dx:12, dy:7},
+    bru:{b:'布魯塞爾',   la:50.8467, lo:4.3525, an:'start', dx:12, dy:7},
+    brg:{b:'布魯日',     la:51.2085, lo:3.2245, an:'middle', dx:0, dy:-14},
+    gnt:{b:'根特',       la:51.0543, lo:3.7174, an:'middle', dx:0, dy:28}
+  };
+  /* 每天的城市間移動：[起點, 終點, 交通]；boat 畫虛線 */
+  var ROUTE = [
+    [['sch','ams']],
+    [['ams','zaan'],['zaan','ams']],
+    [['ams','gieth'],['gieth','ams']],
+    [['ams','bru'],['bru','brg']],
+    [['brg','gnt'],['gnt','ant'],['ant','ams']],
+    [['ams','rot'],['rot','kin','boat'],['kin','rot','boat'],['rot','dlf'],['dlf','ams']],
+    [['ams','sch']]
+  ];
+  var MV = {route:'路線', stops:'景點', g:'Google 地圖'};
+
+  function f1(n){ return Math.round(n * 10) / 10; }
+
+  function routeSvg(di){
+    var on = {};
+    ROUTE[di].forEach(function(l){ on[l[0]] = on[l[1]] = 1; });
+    function seg(l, cls){
+      var a = bxy(CITY[l[0]].la, CITY[l[0]].lo), b = bxy(CITY[l[1]].la, CITY[l[1]].lo);
+      return '<path class="'+cls+'" d="M'+f1(a[0])+' '+f1(a[1])+'L'+f1(b[0])+' '+f1(b[1])+'"/>';
+    }
+    var all = '', today = '';
+    ROUTE.forEach(function(legs, i){ if (i !== di) legs.forEach(function(l){ all += seg(l, 'rt-all'); }); });
+    ROUTE[di].forEach(function(l){ today += seg(l, 'rt-on' + (l[2] === 'boat' ? ' boat' : '')); });
+    var dots = '', labs = '';
+    Object.keys(CITY).forEach(function(k){
+      var C = CITY[k], p = bxy(C.la, C.lo), o = on[k] ? ' on' : '';
+      dots += '<circle class="cd'+o+'" cx="'+f1(p[0])+'" cy="'+f1(p[1])+'" r="'+(o ? 8 : 5.5)+'"/>';
+      labs += '<text class="cl'+o+'" x="'+f1(p[0] + C.dx)+'" y="'+f1(p[1] + C.dy)+'" text-anchor="'+C.an+'">'+esc(C.b)+'</text>';
+    });
+    var names = DAYS[di].k;
+    return '<svg class="mapsvg" viewBox="40 96 530 520" role="img" aria-label="'+esc('荷蘭比利時路線圖：'+names)+'">'+
+      '<rect class="sea" x="0" y="0" width="600" height="700"/>'+
+      '<path class="lx" d="'+BASE.x+'"/><path class="nl" d="'+BASE.nl+'"/><path class="be" d="'+BASE.be+'"/>'+
+      '<path class="lk" d="'+BASE.lk+'"/><path class="rv" d="'+BASE.rv+'"/>'+
+      '<text class="seaname" x="110" y="250">北海</text>'+
+      '<text class="ctry" x="420" y="300">荷蘭</text><text class="ctry" x="330" y="600">比利時</text>'+
+      '<text class="ctry" x="560" y="430" text-anchor="end">德國</text>'+
+      all + today + dots + labs + '</svg>';
+  }
+
+  /* 當天有座標的站，依時間順序編號 */
+  function stopsOf(di){
+    var out = [];
+    DAYS[di].items.forEach(function(it, i){
+      if (it.ll) out.push({i:i, n:out.length + 1, it:it, la:it.ll[0], lo:it.ll[1]});
+    });
+    return out;
+  }
+  function km(a, b){
+    var dx = (a.lo - b.lo) * 111.32 * Math.cos(a.la * Math.PI / 180), dy = (a.la - b.la) * 110.57;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  /* 彼此 3.5 公里內的站放同一張圖（遠的另外列） */
+  function clustersOf(stops){
+    var cls = [];
+    stops.forEach(function(s){
+      var hit = [];
+      cls.forEach(function(c, ci){ if (c.some(function(t){ return km(s, t) < 3.5; })) hit.push(ci); });
+      if (!hit.length) { cls.push([s]); return; }
+      var merged = [s];
+      hit.slice().reverse().forEach(function(ci){ merged = cls[ci].concat(merged); cls.splice(ci, 1); });
+      merged.sort(function(a, b){ return a.n - b.n; });
+      cls.splice(hit[0], 0, merged);
+    });
+    return cls;
+  }
+  function nearestCity(c){
+    var la = 0, lo = 0; c.forEach(function(s){ la += s.la; lo += s.lo; });
+    var m = {la:la / c.length, lo:lo / c.length}, best = null, bd = 1e9;
+    Object.keys(CITY).forEach(function(k){ var d = km(m, CITY[k]); if (d < bd) { bd = d; best = CITY[k].b; } });
+    return best;
+  }
+  function clusterSvg(c){
+    var W = 600, pad = 56, la0 = 90, la1 = -90, lo0 = 999, lo1 = -999;
+    c.forEach(function(s){ la0 = Math.min(la0, s.la); la1 = Math.max(la1, s.la); lo0 = Math.min(lo0, s.lo); lo1 = Math.max(lo1, s.lo); });
+    var cs = Math.cos((la0 + la1) / 2 * Math.PI / 180);
+    var wkm = Math.max((lo1 - lo0) * 111.32 * cs, 0.9), hkm = Math.max((la1 - la0) * 110.57, 0.6);
+    var s = Math.min((W - 2 * pad) / wkm, (400 - 2 * pad) / hkm);
+    var H = Math.max(260, Math.round(hkm * s + 2 * pad)) + 34;  /* 底下留比例尺的位置 */
+    var ox = (W - (lo1 - lo0) * 111.32 * cs * s) / 2, oy = (H - 34 - (la1 - la0) * 110.57 * s) / 2;
+    var P = c.map(function(t){ return {x:ox + (t.lo - lo0) * 111.32 * cs * s, y:oy + (la1 - t.la) * 110.57 * s, t:t}; });
+    /* 太近的編號互相推開，免得疊在一起 */
+    for (var it = 0; it < 60; it++) {
+      var moved = false;
+      for (var a = 0; a < P.length; a++) for (var b = a + 1; b < P.length; b++) {
+        var dx = P[b].x - P[a].x, dy = P[b].y - P[a].y, d = Math.sqrt(dx * dx + dy * dy);
+        if (d < 50) {
+          if (d < 0.01) { dx = 1; dy = 0.6; d = 1.17; }
+          var k = (50 - d) / 2 / d; P[a].x -= dx * k; P[a].y -= dy * k; P[b].x += dx * k; P[b].y += dy * k; moved = true;
+        }
+      }
+      P.forEach(function(p){ p.x = Math.min(W - 28, Math.max(28, p.x)); p.y = Math.min(H - 64, Math.max(28, p.y)); });
+      if (!moved) break;
+    }
+    var walk = P.length > 1 ? '<path class="walk" d="M' + P.map(function(p){ return f1(p.x) + ' ' + f1(p.y); }).join('L') + '"/>' : '';
+    var badges = P.map(function(p){
+      return '<g class="sb'+(p.t.it.must ? ' must' : '')+'" data-i="'+p.t.i+'" tabindex="0" role="button" aria-label="'+esc('第 '+p.t.n+' 站 '+p.t.it.name)+'">'+
+        '<circle cx="'+f1(p.x)+'" cy="'+f1(p.y)+'" r="23"/><text x="'+f1(p.x)+'" y="'+f1(p.y + 1)+'">'+p.t.n+'</text></g>';
+    }).join('');
+    /* 比例尺 */
+    var steps = [0.1, 0.2, 0.5, 1, 2, 5, 10], L = steps[0];
+    steps.forEach(function(v){ if (v * s <= 170) L = v; });
+    var lx = 22, ly = H - 20, lw = L * s, gs = L * s, grid = '';
+    for (var gx = gs; gx < W; gx += gs) grid += 'M'+f1(gx)+' 0V'+H;
+    for (var gy = gs; gy < H; gy += gs) grid += 'M0 '+f1(gy)+'H'+W;
+    var scale = '<path class="scl" d="M'+lx+' '+(ly - 9)+'V'+ly+'H'+f1(lx + lw)+'V'+(ly - 9)+'"/>'+
+      '<text class="sct" x="'+f1(lx + lw + 8)+'" y="'+(ly + 2)+'">'+(L < 1 ? Math.round(L * 1000) + ' 公尺' : L + ' 公里')+'</text>';
+    return '<svg class="mapsvg zoom" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="當天各站位置"><path class="grid" d="'+grid+'"/>'+walk+badges+scale+'</svg>';
+  }
+  function stopLabel(it){ return it.name.replace(/\s+(午餐|晚餐|早上)$/, ''); }
+  function stopsHtml(di){
+    var stops = stopsOf(di);
+    if (!stops.length) return '<p class="mapnote">這天沒有標位置的站。</p>';
+    var cls = clustersOf(stops), html = '', singles = [];
+    cls.forEach(function(c){
+      if (c.length < 2) { singles.push(c[0]); return; }
+      html += '<div class="cluster"><h5>'+esc(nearestCity(c))+'<small>'+c.length+' 站</small></h5>'+clusterSvg(c)+
+        '<ul class="stoplist">'+c.map(function(t){
+          return '<li><button type="button" data-i="'+t.i+'"><span class="sn'+(t.it.must ? ' must' : '')+'">'+t.n+'</span>'+esc(stopLabel(t.it))+'</button></li>';
+        }).join('')+'</ul></div>';
+    });
+    if (singles.length) {
+      html += '<p class="mapnote">不在上面圖裡（距離比較遠，看「路線」）：</p><ul class="stoplist">'+singles.map(function(t){
+        return '<li><button type="button" data-i="'+t.i+'"><span class="sn'+(t.it.must ? ' must' : '')+'">'+t.n+'</span>'+esc(stopLabel(t.it))+'</button></li>';
+      }).join('')+'</ul>';
+    }
+    return html + '<p class="mapnote">位置是大概的，太近的編號會稍微推開；格線一格＝比例尺長度。點編號跳到那一站。</p>';
+  }
+  var gSel = 0;
+  function gHtml(di){
+    var qs = [];
+    DAYS[di].items.forEach(function(it){ if (it.q && qs.indexOf(it.q) < 0) qs.push(it.q); });
+    if (!qs.length) return '<p class="mapnote">這天沒有地點。</p>';
+    if (gSel >= qs.length) gSel = 0;
+    var q = qs[gSel];
+    var names = {};
+    DAYS[di].items.forEach(function(it){ if (it.q && !names[it.q]) names[it.q] = stopLabel(it); });
+    return '<div class="mapchips" role="group" aria-label="選地點">'+qs.map(function(x, i){
+        return '<button type="button" data-g="'+i+'" aria-pressed="'+(i === gSel)+'">'+esc(names[x])+'</button>';
+      }).join('')+'</div>'+
+      '<iframe class="gmap" src="https://www.google.com/maps?q='+encodeURIComponent(q)+'&amp;z=15&amp;output=embed" loading="lazy" title="Google 地圖" referrerpolicy="no-referrer-when-downgrade"></iframe>'+
+      '<p class="mapnote">要有網路才會出現。導航用 <a href="'+map(q)+'" target="_blank" rel="noopener">Google Maps App 開啟 ↗</a></p>';
+  }
+  function mapBody(){
+    var di = state.day;
+    if (state.mv === 'stops') return stopsHtml(di);
+    if (state.mv === 'g') return gHtml(di);
+    return routeSvg(di) + '<p class="mapnote">橘線＝今天的移動，虛線＝其他天，船是橘色虛線。照經緯度畫，距離是真的。</p>';
+  }
+  function mapCard(){
+    return '<div class="mapcard tile"><div class="mapseg" role="group" aria-label="地圖">'+
+      Object.keys(MV).map(function(k){ return '<button type="button" data-mv="'+k+'" aria-pressed="'+(state.mv === k)+'">'+MV[k]+'</button>'; }).join('')+
+      '</div><div id="mapbody">'+mapBody()+'</div></div>';
+  }
+  function renderMap(){
+    document.getElementById('mapbody').innerHTML = mapBody();
+    document.querySelectorAll('.mapseg button').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.mv === state.mv)); });
+    try { localStorage.setItem('nlbe-view', JSON.stringify(state)); } catch(e){}
+  }
+  function goStop(i){
+    var el = document.getElementById('ev-' + state.day + '-' + i); if (!el) return;
+    el.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'center'});
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  }
+  document.getElementById('daypanel').addEventListener('click', function(e){
+    var b = e.target.closest('.mapseg button');
+    if (b) { state.mv = b.dataset.mv; gSel = 0; renderMap(); return; }
+    var g = e.target.closest('.mapchips button');
+    if (g) { gSel = +g.dataset.g; renderMap(); return; }
+    var s = e.target.closest('.sb, .stoplist button');
+    if (s) goStop(+s.dataset.i);
+  });
+  document.getElementById('daypanel').addEventListener('keydown', function(e){
+    var s = e.target.closest && e.target.closest('.sb');
+    if (s && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); goStop(+s.dataset.i); }
+  });
 
   function renderTabs(){
     document.getElementById('daytabs').innerHTML = DAYS.map(function(d,i){
@@ -809,17 +1060,19 @@ footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;f
 
   function renderDay(){
     var d = DAYS[state.day];
-    var html = '<div class="day-title"><div class="row"><span class="tag '+CTRY[d.c][1]+'">'+CTRY[d.c][0]+'</span><h3>'+esc(d.title)+'</h3></div><p>'+esc(d.note)+'</p></div><ol class="tl">';
+    var html = '<div class="day-title"><div class="row"><span class="tag '+CTRY[d.c][1]+'">'+CTRY[d.c][0]+'</span><h3>'+esc(d.title)+'</h3></div><p>'+esc(d.note)+'</p></div>'+mapCard()+'<ol class="tl">';
+    var sn = {}; stopsOf(state.day).forEach(function(s){ sn[s.i] = s.n; });
+    gSel = 0;
     d.items.forEach(function(it, idx){
       if (it.split){ html += '<li class="split">'+esc(it.split)+'</li>'; return; }
       var tr = TR[it.tr];
-      html += '<li class="ev'+(it.must?' is-must':'')+'" style="animation-delay:'+(Math.min(idx,12)*30)+'ms">'+
+      html += '<li id="ev-'+state.day+'-'+idx+'" class="ev'+(it.must?' is-must':'')+'" style="animation-delay:'+(Math.min(idx,12)*30)+'ms">'+
         '<div class="t">'+esc(it.t)+'</div><span class="dot" aria-hidden="true"></span>'+
         '<div class="card"><div class="tags">'+
           (tr ? '<span class="tag '+tr[1]+'">'+tr[0]+'</span>' : '')+
           (it.must ? '<span class="tag must">必去</span>' : '')+
           (it.book ? '<span class="tag book">要先訂</span>' : '')+
-        '</div><h4>'+esc(it.name)+'</h4>'+
+        '</div><h4>'+(sn[idx] ? '<span class="sn'+(it.must?' must':'')+'">'+sn[idx]+'</span>' : '')+esc(it.name)+'</h4>'+
         (it.p ? '<p>'+esc(it.p)+'</p>' : '')+
         (it.alt ? '<p class="alt"><b>Plan B</b> '+esc(it.alt)+'</p>' : '')+
         (it.q ? '<div class="links"><a href="'+map(it.q)+'" target="_blank" rel="noopener">在 Google Maps 打開 ↗</a></div>' : '')+
