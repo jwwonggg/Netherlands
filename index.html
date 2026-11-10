@@ -13,6 +13,8 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <title>荷比七日</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -314,6 +316,13 @@ footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;f
 .mapsvg .scl{stroke:var(--ink);stroke-width:4;fill:none}
 .mapsvg .sct{font-family:var(--body);font-size:22px;font-weight:700;fill:var(--ink-2)}
 .cluster + .cluster{margin-top:14px}
+.lmap{height:300px;border-radius:12px;border:2px solid var(--line);overflow:hidden;background:var(--soft);z-index:0}
+@media (min-width:640px){.lmap{height:360px}}
+.lmap .leaflet-control-attribution{font-size:10px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .lmap .leaflet-tile-pane{filter:brightness(.82) contrast(1.05)}}
+:root[data-theme="dark"] .lmap .leaflet-tile-pane{filter:brightness(.82) contrast(1.05)}
+.lpin{background:none;border:0}
+.lpin .sn{min-width:28px;height:28px;border-radius:14px;font-size:14px;border-width:2.5px;box-shadow:0 1px 3px rgba(0,0,0,.35);cursor:pointer}
 .cluster h5{margin:0 0 6px;font-family:var(--display);font-size:17px}
 .cluster h5 small{font-family:var(--body);font-size:12px;color:var(--ink-2);font-weight:700;margin-left:6px}
 .stoplist{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:4px 6px}
@@ -989,12 +998,13 @@ footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;f
   }
   function stopLabel(it){ return it.name.replace(/\s+(午餐|晚餐|早上)$/, ''); }
   function stopsHtml(di){
+    LCL = [];
     var stops = stopsOf(di);
     if (!stops.length) return '<p class="mapnote">這天沒有標位置的站。</p>';
     var cls = clustersOf(stops), html = '', singles = [];
     cls.forEach(function(c){
       if (c.length < 2) { singles.push(c[0]); return; }
-      html += '<div class="cluster"><h5>'+esc(nearestCity(c))+'<small>'+c.length+' 站</small></h5>'+clusterSvg(c)+
+      html += '<div class="cluster"><h5>'+esc(nearestCity(c))+'<small>'+c.length+' 站</small></h5>'+(window.L ? '<div class="lmap" data-c="'+(LCL.push(c) - 1)+'"></div>' : clusterSvg(c))+
         '<ul class="stoplist">'+c.map(function(t){
           return '<li><button type="button" data-i="'+t.i+'"><span class="sn'+(t.it.must ? ' must' : '')+'">'+t.n+'</span>'+esc(stopLabel(t.it))+'</button></li>';
         }).join('')+'</ul></div>';
@@ -1004,7 +1014,7 @@ footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;f
         return '<li><button type="button" data-i="'+t.i+'"><span class="sn'+(t.it.must ? ' must' : '')+'">'+t.n+'</span>'+esc(stopLabel(t.it))+'</button></li>';
       }).join('')+'</ul>';
     }
-    return html + '<p class="mapnote">位置是大概的，太近的編號會稍微推開；格線一格＝比例尺長度。點編號跳到那一站。</p>';
+    return html + (window.L ? '<p class="mapnote">位置是大概的。兩指縮放地圖，點編號跳到那一站。底圖要有網路。</p>' : '<p class="mapnote">（沒網路，先顯示簡圖）位置是大概的，太近的編號會稍微推開；格線一格＝比例尺長度。點編號跳到那一站。</p>');
   }
   var gSel = 0;
   function gHtml(di){
@@ -1021,6 +1031,30 @@ footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;f
       '<iframe class="gmap" src="https://www.google.com/maps?q='+encodeURIComponent(q)+'&amp;z=15&amp;output=embed" loading="lazy" title="Google 地圖" referrerpolicy="no-referrer-when-downgrade"></iframe>'+
       '<p class="mapnote">要有網路才會出現。導航用 <a href="'+map(q)+'" target="_blank" rel="noopener">Google Maps App 開啟 ↗</a></p>';
   }
+  /* 景點地圖：Esri 街道底圖（免金鑰），沒網路時退回簡圖 */
+  var LCL = [], LMAPS = [];
+  function killMaps(){ LMAPS.forEach(function(m){ m.remove(); }); LMAPS = []; }
+  function initMaps(){
+    if (!window.L) return;
+    document.querySelectorAll('.lmap').forEach(function(el){
+      var c = LCL[+el.dataset.c]; if (!c) return;
+      var m = L.map(el, {scrollWheelZoom:false, dragging:!L.Browser.mobile, tap:false, zoomSnap:0.5});
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom:19,
+        attribution:'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors'
+      }).addTo(m);
+      for (var w = 1; w < c.length; w++) if (c[w].n === c[w - 1].n + 1)
+        L.polyline([[c[w - 1].la, c[w - 1].lo], [c[w].la, c[w].lo]], {color:'#1F4FA3', weight:4, opacity:.75, dashArray:'2 9', lineCap:'round'}).addTo(m);
+      c.forEach(function(t){
+        L.marker([t.la, t.lo], {
+          icon:L.divIcon({className:'lpin', html:'<span class="sn'+(t.it.must ? ' must' : '')+'">'+t.n+'</span>', iconSize:[28, 28], iconAnchor:[14, 14]}),
+          title:t.n + ' ' + t.it.name, keyboard:true, riseOnHover:true
+        }).on('click', function(){ goStop(t.i); }).addTo(m);
+      });
+      m.fitBounds(c.map(function(t){ return [t.la, t.lo]; }), {paddingTopLeft:[56, 40], paddingBottomRight:[30, 40], maxZoom:16});
+      LMAPS.push(m);
+    });
+  }
   function mapBody(){
     var di = state.day;
     if (state.mv === 'stops') return stopsHtml(di);
@@ -1033,7 +1067,9 @@ footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;f
       '</div><div id="mapbody">'+mapBody()+'</div></div>';
   }
   function renderMap(){
+    killMaps();
     document.getElementById('mapbody').innerHTML = mapBody();
+    initMaps();
     document.querySelectorAll('.mapseg button').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.mv === state.mv)); });
     try { localStorage.setItem('nlbe-view', JSON.stringify(state)); } catch(e){}
   }
@@ -1083,7 +1119,9 @@ footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;f
         '</div></li>';
     });
     html += '</ol>';
+    killMaps();
     document.getElementById('daypanel').innerHTML = html;
+    initMaps();
     document.querySelectorAll('.daytab').forEach(function(b){ b.setAttribute('aria-selected', String(+b.dataset.i === state.day)); });
     try { localStorage.setItem('nlbe-view', JSON.stringify(state)); } catch(e){}
   }
