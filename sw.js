@@ -1,7 +1,7 @@
-// 改了 index.html 之後把版本號 +1，手機才會抓新版
-var CACHE = "nlbe-v5";
+// 改了 index.html 或 en.html 之後把版本號 +1，手機才會抓新版
+var CACHE = "nlbe-public-v2";
 var FILES = [
-  "./", "./index.html", "./manifest.webmanifest",
+  "./", "./index.html", "./en.html", "./manifest.webmanifest",
   "./icon-180.png", "./icon-192.png", "./icon-512.png",
   "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css",
   "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"

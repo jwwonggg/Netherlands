@@ -1,0 +1,1352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#F3F6FB" media="(prefers-color-scheme:light)">
+<meta name="theme-color" content="#0E1424" media="(prefers-color-scheme:dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="NL+BE Sample">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<title>NL + BE 7 Days · Sample Trip</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&display=swap" rel="stylesheet">
+<style>
+/* Layout: Delft-blue tile postcard. Single column, fixed top bar, tile corner flowers as the recurring motif,
+   a row of canal houses as the hero on porcelain white; Dutch orange as accent, Belgian waffle gold as second color. */
+:root{
+  --bg:#F3F6FB;        /* porcelain white, a touch of blue */
+  --paper:#FFFFFF;
+  --ink:#14213D;       /* Delft ink blue */
+  --ink-2:#56627E;
+  --line:#14213D;
+  --blue:#1F4FA3;      /* Delft cobalt */
+  --blue-2:#DCE6F6;
+  --orange:#EE7413;    /* Dutch orange */
+  --gold:#E8B53E;      /* Liège waffle gold */
+  --red:#C8342B;       /* Belgian red */
+  --green:#2F7D5B;     /* canal-side trees */
+  --soft:#E6ECF6;
+  --water:#D3E2F4; --land:#FFFFFF; --land-be:#FFF5DF; --land-x:#E8ECF2; --river:#8DAEDC;
+  --on-accent:#FFFFFF;
+  --on-gold:#14213D;
+  --shadow:0 4px 0 var(--blue);
+  --display:'Fraunces','Georgia',serif;
+  --num:'Fraunces','Georgia',serif;
+  --body:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --r:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1424; --paper:#18213A; --ink:#EEF2FA; --ink-2:#A9B4CC; --line:#C9D5EC;
+    --blue:#6E9BEA; --blue-2:#22325A; --soft:#223052; --shadow:0 4px 0 #050914; --water:#0A1630; --land:#1F2A47; --land-be:#2A2B45; --land-x:#141C31; --river:#3E62A0;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1424; --paper:#18213A; --ink:#EEF2FA; --ink-2:#A9B4CC; --line:#C9D5EC;
+  --blue:#6E9BEA; --blue-2:#22325A; --soft:#223052; --shadow:0 4px 0 #050914; --water:#0A1630; --land:#1F2A47; --land-be:#2A2B45; --land-x:#141C31; --river:#3E62A0;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;font-family:var(--display);font-weight:700;line-height:1.25;text-wrap:balance}
+p{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px}
+
+/* fixed top menu */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:50;background:var(--paper);border-bottom:2px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.topbar .wrap{display:flex;align-items:center;gap:8px;height:56px;overflow-x:auto;scrollbar-width:none}
+.topbar .wrap::-webkit-scrollbar{display:none}
+.brand{font-family:var(--display);font-weight:700;font-size:21px;white-space:nowrap;padding-right:6px;color:var(--orange)}
+.brand b{color:var(--blue);font-weight:700}
+.topbar nav{display:flex;gap:6px;margin-left:auto}
+.topbar nav a{white-space:nowrap;text-decoration:none;font-size:14px;font-weight:700;padding:4px 11px;border:2px solid var(--line);border-radius:8px;background:var(--paper);transition:transform .15s,background .15s}
+.topbar nav a:hover,.topbar nav a:focus-visible{background:var(--blue);color:var(--on-accent);border-color:var(--blue);transform:translateY(-1px);outline:none}
+main{padding-top:calc(56px + env(safe-area-inset-top,0px))}
+section{padding-block:40px 8px;scroll-margin-top:60px}
+.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.sec-head h2{font-size:28px}
+.sec-head .eyebrow{font-family:var(--num);font-size:12px;letter-spacing:.14em;color:var(--orange);font-weight:800;text-transform:uppercase}
+.sec-head svg{flex:none}
+.lead{margin-bottom:14px;font-size:14px;color:var(--ink-2);font-weight:700;max-width:62ch}
+
+/* tile: little corner flowers, used on cards */
+.tile{position:relative;background:var(--paper);border:2px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+
+/* home */
+.hero{padding-top:20px}
+.hero-card{background:var(--blue-2);border:2px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow);position:relative}
+.hero-art{display:block;width:100%;height:auto;max-width:100%}
+.hero-body{padding:14px 20px 22px;text-align:center;background:var(--paper);border-top:2px solid var(--line)}
+.h-title{font-family:var(--display);font-weight:700;font-size:clamp(40px,11vw,68px);line-height:1.1;color:var(--blue);letter-spacing:.04em}
+.h-title i{font-style:normal;color:var(--orange)}
+.h-title{font-size:clamp(34px,9.5vw,60px);letter-spacing:0}
+.h-sub{font-family:var(--num);font-weight:600;font-size:clamp(14px,3.6vw,18px);color:var(--ink-2);letter-spacing:.18em;text-transform:uppercase;margin-top:2px}
+.route{margin-top:14px;display:flex;justify-content:center;flex-wrap:wrap;gap:6px;align-items:center;font-weight:900;font-size:14px}
+.route span{border:2px solid var(--line);border-radius:8px;padding:2px 10px;background:var(--paper)}
+.route .nl{background:var(--orange);color:var(--on-accent);border-color:var(--orange)}
+.route .be{background:var(--gold);color:var(--on-gold);border-color:var(--gold)}
+.route em{font-style:normal;color:var(--ink-2)}
+.countdown{margin-top:18px;display:flex;justify-content:center;gap:10px}
+.cd{background:var(--paper);border:2px solid var(--line);border-radius:12px;min-width:72px;padding:8px 6px 6px;box-shadow:var(--shadow)}
+.cd .n{font-family:var(--num);font-weight:800;font-size:38px;color:var(--orange);line-height:1;font-variant-numeric:tabular-nums lining-nums}
+.cd .l{font-size:12px;font-weight:700;color:var(--ink-2);letter-spacing:.1em}
+.cd-note{margin-top:10px;font-size:13px;color:var(--ink-2);font-weight:700}
+
+/* flight card */
+.pcard{overflow:hidden}
+.pcard-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;padding:12px 16px;border-bottom:2px solid var(--line)}
+.pcard-head h3{font-size:24px}
+.pcard-head .who{margin-left:auto}
+.leg{display:grid;grid-template-columns:1fr auto 1fr;gap:8px 10px;padding:14px 16px;align-items:center}
+.leg + .leg{border-top:2px dashed var(--line)}
+.leg .ap{font-family:var(--num);font-weight:800;font-size:30px;line-height:1}
+.leg .tm{font-family:var(--num);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums lining-nums;line-height:1.1;margin-top:2px}
+.leg .tm sup{font-family:var(--body);font-size:11px;color:var(--red);font-weight:900;margin-left:2px}
+.leg .nm{font-size:12px;color:var(--ink-2);font-weight:700}
+.leg .to{text-align:right}
+.leg .mid{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:700;color:var(--ink-2);min-width:84px}
+.leg .mid .line{width:100%;border-top:3px dotted var(--line);margin:4px 0}
+.leg .meta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;font-size:12px;font-weight:700}
+.leg .meta span{background:var(--soft);border:2px solid var(--line);border-radius:8px;padding:1px 9px}
+.leg .meta .no{background:var(--gold);color:var(--on-gold);border-color:var(--gold)}
+.leg .date{font-size:12px;color:var(--ink-2);font-weight:700;grid-column:1/-1;margin-bottom:-6px}
+.fnote{font-size:13px;color:var(--ink-2);font-weight:700;margin-top:12px}
+
+/* tags */
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:900;padding:1px 8px;border-radius:7px;border:2px solid var(--line);line-height:1.5;white-space:nowrap}
+.tr-train{background:#003082;color:#FFFFFF;border-color:#003082}   /* NS blue */
+.tr-ns{background:#FFC917;color:#003082;border-color:#FFC917}      /* NS yellow */
+.tr-euro{background:#7A1E3A;color:#FFFFFF;border-color:#7A1E3A}
+.tr-sncb{background:#0069B4;color:#FFFFFF;border-color:#0069B4}
+.tr-tram{background:var(--green);color:#FFFFFF;border-color:var(--green)}
+.tr-bus{background:#4B5563;color:#FFFFFF;border-color:#4B5563}
+.tr-boat{background:#1B8A8F;color:#FFFFFF;border-color:#1B8A8F}
+.tr-walk{background:var(--paper);color:var(--ink)}
+.tr-plane{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.c-nl{background:var(--orange);color:var(--on-accent);border-color:var(--orange)}
+.c-be{background:var(--gold);color:var(--on-gold);border-color:var(--gold)}
+.must{background:var(--red);color:#FFFFFF;border-color:var(--red)}
+.book{background:var(--paper);color:var(--red);border-color:var(--red)}
+
+/* daily itinerary */
+.daytabs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;margin:0 -2px 10px;scroll-snap-type:x mandatory;scrollbar-width:thin}
+.daytab{flex:0 0 auto;width:92px;scroll-snap-align:start;background:var(--paper);border:2px solid var(--line);border-radius:12px;padding:7px 6px 9px;box-shadow:var(--shadow);text-align:center;transition:transform .15s,background .15s}
+.daytab .d{font-family:var(--num);font-weight:800;font-size:24px;color:var(--blue);line-height:1;font-variant-numeric:lining-nums}
+.daytab .w{font-family:var(--display);font-size:15px;color:var(--ink);margin-top:2px}
+.daytab .k{font-size:11px;font-weight:700;color:var(--ink-2);margin-top:3px;line-height:1.35}
+.daytab:hover{transform:translateY(-2px)}
+.daytab[aria-selected="true"]{background:var(--blue);border-color:var(--blue)}
+.daytab[aria-selected="true"] .d,.daytab[aria-selected="true"] .w,.daytab[aria-selected="true"] .k{color:var(--on-accent)}
+.daytab:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+@media (min-width:700px){ .daytabs{display:grid;grid-template-columns:repeat(7,1fr);overflow:visible} .daytab{width:auto} }
+.day-title{display:grid;gap:4px;margin-bottom:14px}
+.day-title .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.day-title h3{font-size:26px}
+.day-title p{color:var(--ink-2);font-size:14px;font-weight:700;max-width:62ch}
+.tl{list-style:none;margin:0;padding:0 0 0 2px;position:relative}
+.tl::before{content:"";position:absolute;left:66px;top:6px;bottom:6px;border-left:3px dotted var(--blue);opacity:.55}
+.ev{display:grid;grid-template-columns:52px 1fr;gap:0 26px;padding:7px 0;position:relative;animation:rise .4s both}
+.ev .t{font-family:var(--num);font-size:16px;font-weight:600;font-variant-numeric:tabular-nums lining-nums;text-align:right;padding-top:12px;line-height:1}
+.ev .dot{position:absolute;left:60px;top:17px;width:15px;height:15px;transform:rotate(45deg);border:2px solid var(--line);background:var(--paper)}
+.ev.is-must .dot{background:var(--orange);border-color:var(--orange)}
+.ev .card{background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:10px 14px 12px;min-width:0}
+.ev.is-must .card{box-shadow:var(--shadow)}
+.ev .tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.ev h4{font-size:19px;line-height:1.3}
+.ev p{font-size:14px;color:var(--ink-2);margin-top:4px}
+.ev .alt{margin-top:6px;font-size:13px;color:var(--ink);background:var(--soft);border-radius:8px;padding:4px 8px}
+.ev .alt b{color:var(--blue);font-weight:900}
+.ev .links{margin-top:6px;font-size:13px;font-weight:700}
+.ev .links a{color:var(--blue)}
+.split{display:flex;align-items:center;gap:10px;margin:14px 0 6px;font-family:var(--display);font-size:16px;color:var(--ink-2)}
+.split::before,.split::after{content:"";flex:1;border-top:2px dashed var(--line);opacity:.4}
+
+/* checklist */
+.todo{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.todo li{background:var(--paper);border:2px solid var(--line);border-radius:12px}
+.todo label{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;cursor:pointer}
+.todo input{appearance:none;flex:none;width:24px;height:24px;margin-top:2px;border:2px solid var(--line);border-radius:6px;background:var(--paper);display:grid;place-items:center;transition:background .15s}
+.todo input:checked{background:var(--green);border-color:var(--green)}
+.todo input:checked::after{content:"";width:7px;height:12px;border:solid #FFFFFF;border-width:0 3px 3px 0;transform:translateY(-2px) rotate(45deg)}
+.todo input:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.todo .tx{font-weight:700;font-size:15px}
+.todo .tx .tag{margin-left:6px;vertical-align:1px}
+.todo .sub{display:block;font-weight:400;font-size:13px;color:var(--ink-2)}
+.todo input:checked ~ .tx{text-decoration:line-through;color:var(--ink-2)}
+.todo-foot{margin-top:10px;font-size:13px;color:var(--ink-2);font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.todo-foot button{border:2px solid var(--line);background:var(--paper);border-radius:8px;padding:3px 10px;font-size:12px;font-weight:900}
+
+/* stay */
+.stays{display:grid;gap:16px}
+.stay{overflow:hidden}
+.stay-art{background:var(--blue-2);border-bottom:2px solid var(--line);padding:10px 16px 0}
+.stay-art svg{display:block;width:100%;height:auto;max-width:100%}
+.stay-body{padding:14px 16px 16px}
+.stay-body h3{font-size:24px}
+.stay-body .en{font-size:13px;color:var(--ink-2);font-weight:700}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:12px 0 0;font-size:14px}
+.kv dt{font-weight:900;color:var(--ink-2);white-space:nowrap}
+.kv dd{margin:0;min-width:0}
+.tbd{color:var(--red);font-weight:900}
+
+/* lists */
+.places{display:flex;flex-wrap:wrap;gap:8px}
+.place{display:inline-flex;align-items:center;gap:6px;text-decoration:none;border:2px solid var(--line);border-radius:10px;padding:5px 12px;background:var(--paper);font-size:14px;font-weight:700;transition:transform .15s}
+.place:hover{transform:translateY(-2px);background:var(--gold);color:var(--on-gold)}
+.place .area{font-size:11px;color:var(--ink-2);font-weight:900}
+.place .note{font-size:11px;color:var(--ink-2);font-weight:700}
+.place:hover .area,.place:hover .note{color:var(--on-gold)}
+.eat-group{margin-bottom:18px}
+.eat-group h3{font-size:20px;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.opt-group{margin-bottom:16px}
+.opt-group h3{font-size:20px;display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.opt-group h3 .fit{font-family:var(--body);font-size:12px;font-weight:900;color:var(--ink-2);background:var(--soft);border-radius:8px;padding:1px 9px}
+footer{padding:40px 0 32px;text-align:center;color:var(--ink-2);font-size:13px;font-weight:700}
+
+/* expenses */
+[hidden]{display:none!important}
+.mtotal{overflow:hidden;margin-bottom:14px}
+.mt-main{padding:14px 16px 12px;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px}
+.mt-main .lb{width:100%;font-size:12px;font-weight:900;color:var(--ink-2);letter-spacing:.08em}
+.mt-main .big{font-family:var(--num);font-weight:800;font-size:40px;line-height:1;color:var(--orange);font-variant-numeric:tabular-nums lining-nums}
+.mt-main .sm{font-size:15px;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.mchips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.mchips button,.seg button{border:2px solid var(--line);background:var(--paper);border-radius:8px;padding:3px 11px;font-weight:900;font-size:13px}
+.mchips button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.mform{padding:6px 14px 14px;margin-bottom:18px}
+.mrow{display:grid;grid-template-columns:68px 1fr;align-items:center;gap:10px;padding:8px 0;border-bottom:2px dashed var(--soft)}
+.mrow:last-of-type{border-bottom:0}
+.mrow > span{font-size:13px;font-weight:900;color:var(--ink-2)}
+.mrow input,.mrow select,.mset input{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:8px;padding:7px 10px;width:100%;min-width:0}
+.mrow input:focus-visible,.mrow select:focus-visible,.mset input:focus-visible,.seg button:focus-visible,.mbtn:focus-visible,.mchips button:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+#m-amt{font-family:var(--num);font-size:22px;font-weight:800;font-variant-numeric:tabular-nums lining-nums}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button[aria-pressed="true"]{background:var(--blue);color:var(--on-accent);border-color:var(--blue)}
+.mbtn{display:block;width:100%;margin-top:12px;border:2px solid var(--line);background:var(--orange);color:var(--on-accent);border-radius:12px;padding:10px;font-weight:900;font-size:16px;box-shadow:var(--shadow)}
+.mbtn.ghost{background:var(--paper);color:var(--ink);box-shadow:none}
+.mbtn.warn{color:var(--red)}
+.mh{font-family:var(--display);font-size:20px;margin:6px 0 8px}
+.mbrk{display:grid;gap:8px;margin-bottom:18px}
+.mbrk .b{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;font-size:13px;font-weight:700}
+.mbrk .bar{height:12px;border:2px solid var(--line);border-radius:4px;background:var(--bg);overflow:hidden}
+.mbrk .bar i{display:block;height:100%}
+.mbrk .v{font-variant-numeric:tabular-nums}
+.mlist{list-style:none;margin:0 0 18px;padding:0;display:grid;gap:8px}
+.mlist li{background:var(--paper);border:2px solid var(--line);border-radius:12px;padding:8px 12px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center}
+.mlist .t{font-weight:900;font-size:15px;min-width:0;overflow-wrap:anywhere}
+.mlist .m{font-size:12px;color:var(--ink-2);font-weight:700;grid-column:1}
+.mlist .a{grid-row:1/3;grid-column:2;text-align:right;font-variant-numeric:tabular-nums}
+.mlist .a b{display:block;font-size:17px}
+.mlist .a small{color:var(--ink-2);font-weight:700}
+.mlist .del{grid-column:1/-1;justify-self:start;border:0;background:none;color:var(--ink-2);font-size:12px;font-weight:900;padding:2px 0;text-decoration:underline}
+.mlist .del.armed{color:var(--red)}
+.mlist .mempty{border:0;background:none;display:block;color:var(--ink-2);font-weight:700;padding:4px 0 10px}
+.mset{padding:12px 14px 14px;display:grid;gap:10px}
+.mset label{font-size:13px;font-weight:900;color:var(--ink-2)}
+.mset .rate{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:700}
+.mset .rate input{width:90px}
+.mset textarea{display:block;width:100%;min-height:0;height:0;padding:0;border:0;opacity:0;position:absolute;pointer-events:none}
+.mmsg{font-size:13px;font-weight:900;color:var(--green);min-height:1.2em}
+
+/* motion: windmill turns slowly, boat bobs gently */
+.sails{transform-box:fill-box;transform-origin:center;animation:spin 16s linear infinite}
+.boat{animation:bob 4s ease-in-out infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(2px)}}
+@keyframes rise{from{opacity:.001;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){
+  .sails,.boat,.ev{animation:none}
+  .topbar nav a,.daytab,.place{transition:none}
+}
+@media (min-width:640px){
+  .stays{grid-template-columns:1fr 1fr}
+  .tl::before{left:76px}
+  .ev{grid-template-columns:62px 1fr}
+  .ev .dot{left:70px}
+}
+@media (max-width:420px){
+  .leg .ap{font-size:25px}
+  .leg .tm{font-size:19px}
+  .cd{min-width:62px}
+  .cd .n{font-size:32px}
+}
+
+/* map card: route (all of NL+BE) / stops (numbered stops for the day) / Google Maps */
+.mapcard{padding:12px;margin-bottom:18px}
+.mapseg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.mapseg button{border:2px solid var(--line);background:var(--paper);border-radius:8px;padding:3px 11px;font-weight:900;font-size:13px}
+.mapseg button[aria-pressed="true"]{background:var(--blue);color:var(--on-accent);border-color:var(--blue)}
+.mapseg button:focus-visible,.mapchips button:focus-visible,.stoplist button:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.mapsvg{display:block;width:100%;height:auto;max-width:520px;margin:0 auto;border-radius:12px;background:var(--water)}
+.mapsvg .sea{fill:var(--water)}
+.mapsvg .lx{fill:var(--land-x);stroke:var(--ink-2);stroke-width:.6;stroke-opacity:.35}
+.mapsvg .nl{fill:var(--land);stroke:var(--ink);stroke-width:1.3;stroke-linejoin:round}
+.mapsvg .be{fill:var(--land-be);stroke:var(--ink);stroke-width:1.3;stroke-linejoin:round}
+.mapsvg .lk{fill:var(--water)}
+.mapsvg .rv{fill:none;stroke:var(--river);stroke-width:1.6;stroke-linejoin:round}
+.mapsvg .ctry{font-family:var(--display);font-size:22px;font-weight:700;fill:var(--ink-2);opacity:.55;letter-spacing:.2em}
+.mapsvg .seaname{font-family:var(--display);font-size:20px;fill:var(--blue);opacity:.6;letter-spacing:.3em}
+.mapsvg .rt-all{fill:none;stroke:var(--ink-2);stroke-width:2;stroke-dasharray:2 6;stroke-linecap:round;opacity:.6}
+.mapsvg .rt-on{fill:none;stroke:var(--orange);stroke-width:5;stroke-linecap:round}
+.mapsvg .rt-on.boat{stroke-dasharray:10 8}
+.mapsvg .cd{fill:var(--paper);stroke:var(--ink-2);stroke-width:2}
+.mapsvg .cd.on{fill:var(--orange);stroke:var(--ink);stroke-width:2.5}
+.mapsvg .cl{font-family:var(--body);font-size:17px;font-weight:700;fill:var(--ink-2);paint-order:stroke;stroke:var(--land);stroke-width:4px;stroke-linejoin:round}
+.mapsvg .cl.on{font-size:20px;font-weight:900;fill:var(--ink)}
+.mapsvg.zoom{background:var(--land)}
+.mapsvg .walk{fill:none;stroke:var(--blue);stroke-width:4.5;stroke-dasharray:1 11;stroke-linecap:round}
+.mapsvg .grid{fill:none;stroke:var(--soft);stroke-width:1.5}
+.mapsvg .sb{cursor:pointer}
+.mapsvg .sb circle{fill:var(--paper);stroke:var(--ink);stroke-width:3.5}
+.mapsvg .sb.must circle{fill:var(--orange);stroke:var(--ink)}
+.mapsvg .sb text{font-family:var(--num);font-size:26px;font-weight:800;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.mapsvg .sb.must text{fill:var(--on-accent)}
+.mapsvg .sb:hover circle,.mapsvg .sb:focus-visible circle{stroke:var(--blue);stroke-width:6}
+.mapsvg .sb:focus{outline:none}
+.mapsvg .scl{stroke:var(--ink);stroke-width:4;fill:none}
+.mapsvg .sct{font-family:var(--body);font-size:22px;font-weight:700;fill:var(--ink-2)}
+.cluster + .cluster{margin-top:14px}
+.lmap{height:300px;border-radius:12px;border:2px solid var(--line);overflow:hidden;background:var(--soft);z-index:0}
+@media (min-width:640px){.lmap{height:360px}}
+.lmap .leaflet-control-attribution{font-size:10px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .lmap .leaflet-tile-pane{filter:brightness(.82) contrast(1.05)}}
+:root[data-theme="dark"] .lmap .leaflet-tile-pane{filter:brightness(.82) contrast(1.05)}
+.lpin{background:none;border:0}
+.lpin .sn{min-width:28px;height:28px;border-radius:14px;font-size:14px;border-width:2.5px;box-shadow:0 1px 3px rgba(0,0,0,.35);cursor:pointer}
+.cluster h5{margin:0 0 6px;font-family:var(--display);font-size:17px}
+.cluster h5 small{font-family:var(--body);font-size:12px;color:var(--ink-2);font-weight:700;margin-left:6px}
+.stoplist{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:4px 6px}
+.stoplist button{display:inline-flex;align-items:center;gap:5px;border:0;background:none;padding:2px 4px 2px 0;font-size:13px;font-weight:700;color:var(--ink-2);text-align:left}
+.stoplist button:hover{color:var(--blue)}
+.sn{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 4px;border-radius:11px;border:2px solid var(--ink);background:var(--paper);color:var(--ink);font-family:var(--num);font-size:12px;font-weight:800;line-height:1;flex:none}
+.sn.must{background:var(--orange);color:var(--on-accent)}
+.ev h4 .sn{margin-right:6px;vertical-align:2px}
+.mapnote{font-size:12px;color:var(--ink-2);font-weight:700;margin-top:8px}
+.mapnote a{color:var(--blue)}
+.mapchips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px;scrollbar-width:thin}
+.mapchips button{flex:none;border:2px solid var(--line);background:var(--paper);border-radius:8px;padding:2px 10px;font-weight:700;font-size:13px;white-space:nowrap}
+.mapchips button[aria-pressed="true"]{background:var(--blue);color:var(--on-accent);border-color:var(--blue)}
+.gmap{display:block;width:100%;height:56vh;min-height:300px;border:0;border-radius:12px;background:var(--soft)}
+.ev{scroll-margin-top:84px}
+.ev.flash .card{animation:flash 1.4s ease-out}
+@keyframes flash{0%,40%{background:var(--blue-2)}100%{background:var(--paper)}}
+@media (prefers-reduced-motion:reduce){.ev.flash .card{animation:none}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">NL+BE <b>7 Days</b></div>
+    <nav aria-label="Page menu">
+      <a href="#home">Home</a>
+      <a href="#flights">Flights</a>
+      <a href="#days">Days</a>
+      <a href="#money">Expenses</a>
+      <a href="#todo">Checklist</a>
+      <a href="#stay">Stay</a>
+      <a href="#eat">Eats</a>
+      <a href="#options">Plan B</a>
+      <a href="index.html" lang="zh-Hant" hreflang="zh-Hant">中文</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- Home -->
+<section id="home" class="hero">
+  <div class="wrap">
+    <div class="hero-card">
+      <svg class="hero-art" viewBox="0 0 360 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Illustration of Amsterdam canal houses, a windmill and a canal boat">
+        <rect width="360" height="180" fill="#DCE6F6"/>
+        <circle cx="300" cy="34" r="14" fill="#E8B53E"/>
+        <g fill="#FFFFFF" opacity=".9">
+          <ellipse cx="70" cy="30" rx="22" ry="7"/><ellipse cx="86" cy="25" rx="14" ry="7"/>
+          <ellipse cx="220" cy="22" rx="18" ry="6"/><ellipse cx="234" cy="18" rx="11" ry="6"/>
+        </g>
+        <!-- windmill in the distance -->
+        <g>
+          <path d="M24 140 L31 74 L45 74 L52 140Z" fill="#7A5A3A" stroke="#14213D" stroke-width="2"/>
+          <rect x="34" y="124" width="8" height="16" fill="#14213D"/>
+          <path d="M29 75 L38 64 L47 75Z" fill="#14213D"/>
+          <g class="sails">
+            <g stroke="#14213D" stroke-width="2" fill="#FFFFFF">
+              <rect x="35.5" y="40" width="5" height="26"/><rect x="35.5" y="70" width="5" height="26"/>
+              <rect x="10" y="65.5" width="26" height="5"/><rect x="40" y="65.5" width="26" height="5"/>
+            </g>
+          </g>
+          <circle cx="38" cy="68" r="3" fill="#14213D"/>
+        </g>
+        <!-- canal houses -->
+        <g stroke="#14213D" stroke-width="2.2" stroke-linejoin="round">
+          <!-- step gable -->
+          <path d="M72 140 V78 h6 v-8 h6 v-8 h12 v8 h6 v8 h6 V140Z" fill="#9C3B2E"/>
+          <!-- bell gable -->
+          <path d="M108 140 V74 q0 -10 8 -12 q4 -10 10 -10 q6 0 10 10 q8 2 8 12 V140Z" fill="#1F4FA3"/>
+          <!-- neck gable -->
+          <path d="M144 140 V66 h8 v-12 h20 v12 h8 V140Z" fill="#E8B53E"/>
+          <!-- pointed gable -->
+          <path d="M180 140 V80 l18 -22 l18 22 V140Z" fill="#2F7D5B"/>
+          <!-- step gable -->
+          <path d="M216 140 V84 h5 v-8 h5 v-8 h5 v-8 h10 v8 h5 v8 h5 v8 h5 V140Z" fill="#14213D"/>
+          <!-- bell gable -->
+          <path d="M256 140 V72 q0 -10 8 -12 q4 -10 10 -10 q6 0 10 10 q8 2 8 12 V140Z" fill="#EE7413"/>
+          <path d="M292 140 V86 h6 v-8 h6 v-8 h12 v8 h6 v8 h6 V140Z" fill="#C9D5EC"/>
+        </g>
+        <!-- windows -->
+        <g fill="#FFFFFF" stroke="#14213D" stroke-width="1.5">
+          <rect x="79" y="86" width="8" height="11"/><rect x="93" y="86" width="8" height="11"/><rect x="79" y="106" width="8" height="11"/><rect x="93" y="106" width="8" height="11"/>
+          <rect x="115" y="80" width="8" height="11"/><rect x="129" y="80" width="8" height="11"/><rect x="115" y="100" width="8" height="11"/><rect x="129" y="100" width="8" height="11"/>
+          <rect x="151" y="72" width="8" height="11"/><rect x="165" y="72" width="8" height="11"/><rect x="151" y="94" width="8" height="11"/><rect x="165" y="94" width="8" height="11"/>
+          <rect x="187" y="86" width="8" height="11"/><rect x="201" y="86" width="8" height="11"/><rect x="187" y="106" width="8" height="11"/><rect x="201" y="106" width="8" height="11"/>
+          <rect x="223" y="90" width="8" height="11"/><rect x="237" y="90" width="8" height="11"/><rect x="223" y="110" width="8" height="11"/><rect x="237" y="110" width="8" height="11"/>
+          <rect x="263" y="78" width="8" height="11"/><rect x="277" y="78" width="8" height="11"/><rect x="263" y="98" width="8" height="11"/><rect x="277" y="98" width="8" height="11"/>
+          <rect x="299" y="92" width="8" height="11"/><rect x="313" y="92" width="8" height="11"/><rect x="299" y="112" width="8" height="11"/><rect x="313" y="112" width="8" height="11"/>
+        </g>
+        <!-- hoist hooks -->
+        <g stroke="#14213D" stroke-width="2"><path d="M162 54 v-6 h8"/><path d="M198 58 v-6"/></g>
+        <!-- quay + bike -->
+        <rect x="0" y="140" width="360" height="8" fill="#B8A894" stroke="#14213D" stroke-width="2"/>
+        <g transform="translate(320,124)" stroke="#14213D" stroke-width="2" fill="none">
+          <circle cx="0" cy="10" r="6"/><circle cx="22" cy="10" r="6"/>
+          <path d="M0 10 L8 0 H18 L22 10 M8 0 L12 10 L18 0 M6 -3 h5 M18 0 v-4 h4"/>
+        </g>
+        <!-- canal -->
+        <rect x="0" y="148" width="360" height="32" fill="#1F4FA3"/>
+        <g stroke="#C9D5EC" stroke-width="2" fill="none" opacity=".75">
+          <path d="M14 162 q7 -4 14 0 t14 0"/><path d="M250 172 q7 -4 14 0 t14 0 t14 0"/><path d="M60 174 q7 -4 14 0"/>
+        </g>
+        <!-- canal boat -->
+        <g class="boat">
+          <g transform="translate(120,146)">
+            <path d="M0 8 L6 18 H96 L104 8Z" fill="#FFFFFF" stroke="#14213D" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M14 8 V0 q0 -4 4 -4 H80 q4 0 4 4 V8Z" fill="#C9D5EC" stroke="#14213D" stroke-width="2.2"/>
+            <path d="M20 -1 h56" stroke="#14213D" stroke-width="1.5"/>
+            <rect x="0" y="8" width="104" height="3" fill="#EE7413"/>
+          </g>
+        </g>
+      </svg>
+      <div class="hero-body">
+        <div class="h-title">Netherlands <i>+</i> Belgium</div>
+        <div class="h-sub">Sample trip · 7 days in the Low Countries</div>
+        <div class="route" aria-label="Route">
+          <span class="nl">Amsterdam</span><em>→</em><span class="be">Brussels</span><em>→</em><span class="be">Bruges</span><em>→</em><span class="be">Ghent</span><em>→</em><span class="nl">Rotterdam</span>
+        </div>
+        <div class="countdown" id="countdown" aria-live="polite">
+          <div class="cd"><div class="n" id="cd-d">—</div><div class="l">days</div></div>
+          <div class="cd"><div class="n" id="cd-h">—</div><div class="l">hrs</div></div>
+          <div class="cd"><div class="n" id="cd-m">—</div><div class="l">min</div></div>
+        </div>
+        <p class="cd-note" id="cd-note">until takeoff, Sun 10/17 23:30</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Flights -->
+<section id="flights">
+  <div class="wrap">
+    <div class="sec-head">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="6" fill="#DCE6F6" stroke="#14213D" stroke-width="2"/><path d="M7 24 L29 13 L33 15 L22 26 L24 33 L21 33 L17 28 L11 30 L9 28 L14 24Z" fill="#1F4FA3" stroke="#14213D" stroke-width="2" stroke-linejoin="round"/></svg>
+      <div><div class="eyebrow">Flights</div><h2>There and back</h2></div>
+    </div>
+    <article class="pcard tile">
+      <div class="pcard-head">
+        <h3>Traveler A (sample)</h3>
+        <span class="tag tr-plane">Demo Air (fictional)</span>
+        <span class="who tag c-nl">Taipei ⇄ Amsterdam</span>
+      </div>
+      <div class="leg">
+        <div class="date">Sun 10/17 · Outbound · Confirmed</div>
+        <div><div class="ap">TPE</div><div class="tm">23:30</div><div class="nm">Taoyuan</div></div>
+        <div class="mid"><span>14h 45m</span><div class="line"></div><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 13 L16 6 L19 7 L12 14 L13 18 L11 18 L9 15 L5 16 L4 15 L7 13Z" fill="currentColor"/></svg></div>
+        <div class="to"><div class="ap">AMS</div><div class="tm">08:15<sup>+1</sup></div><div class="nm">Schiphol, Mon 10/18</div></div>
+        <div class="meta"><span class="no">XA 801</span><span>Nonstop</span><span>Economy (sample)</span></div>
+      </div>
+      <div class="leg">
+        <div class="date">Sun 10/24 · Return · Confirmed</div>
+        <div><div class="ap">AMS</div><div class="tm">19:50</div><div class="nm">Schiphol</div></div>
+        <div class="mid"><span>12h 50m</span><div class="line"></div><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M3 13 L16 6 L19 7 L12 14 L13 18 L11 18 L9 15 L5 16 L4 15 L7 13Z" fill="currentColor"/></svg></div>
+        <div class="to"><div class="ap">TPE</div><div class="tm">14:40<sup>+1</sup></div><div class="nm">Taoyuan, Mon 10/25</div></div>
+        <div class="meta"><span class="no">XA 802</span><span>Nonstop</span><span>Economy (sample)</span></div>
+      </div>
+    </article>
+    <p class="fnote">Fare TWD 32,400 (sample figure). The airline and flight numbers are made up, just to show the pace of the trip. Europe switches to winter time in late October, so check that year’s changeover date before you fly.</p>
+  </div>
+</section>
+
+<!-- Itinerary -->
+<section id="days">
+  <div class="wrap">
+    <div class="sec-head">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="6" fill="#DCE6F6" stroke="#14213D" stroke-width="2"/><path d="M14 33 L17 16 L23 16 L26 33Z" fill="#9C3B2E" stroke="#14213D" stroke-width="2" stroke-linejoin="round"/><g stroke="#14213D" stroke-width="2" fill="#FFFFFF"><rect x="18.5" y="4" width="3" height="11"/><rect x="18.5" y="17" width="3" height="11"/><rect x="8" y="14.5" width="11" height="3"/><rect x="21" y="14.5" width="11" height="3"/></g><circle cx="20" cy="16" r="2" fill="#14213D"/></svg>
+      <div><div class="eyebrow">Itinerary</div><h2>Day by day</h2></div>
+    </div>
+    <p class="lead">In Amsterdam we stay central at the Lanternhof Canal Lantern Hotel (fictional), plus one night in Bruges. Hotel names and addresses are just placeholders.</p>
+    <div class="daytabs" role="tablist" aria-label="Pick a day" id="daytabs"></div>
+    <div id="daypanel" role="tabpanel"></div>
+  </div>
+</section>
+
+<!-- Checklist -->
+<section id="todo">
+  <div class="wrap">
+    <div class="sec-head">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="6" fill="#DCE6F6" stroke="#14213D" stroke-width="2"/><path d="M20 30 C13 26 10 20 12 13 C15 16 17 18 20 19 C23 18 25 16 28 13 C30 20 27 26 20 30Z" fill="#EE7413" stroke="#14213D" stroke-width="2" stroke-linejoin="round"/><path d="M20 30 V36" stroke="#2F7D5B" stroke-width="2.5"/></svg>
+      <div><div class="eyebrow">Checklist</div><h2>Before you go</h2></div>
+    </div>
+    <ul class="todo" id="todolist"></ul>
+    <div class="todo-foot"><span id="todo-count">0 / 0 done</span><button type="button" id="todo-reset">Clear all</button></div>
+  </div>
+</section>
+
+<!-- Expenses -->
+<section id="money">
+  <div class="wrap">
+    <div class="sec-head">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="6" fill="#DCE6F6" stroke="#14213D" stroke-width="2"/><circle cx="20" cy="20" r="11" fill="#E8B53E" stroke="#14213D" stroke-width="2"/><text x="20" y="25" font-size="14" font-weight="800" text-anchor="middle" fill="#14213D" font-family="Fraunces, Georgia, serif">€</text></svg>
+      <div><div class="eyebrow">Expenses</div><h2>Money log</h2></div>
+    </div>
+    <p class="lead">Saved on this phone only. Log in euros or NT$, it converts for you.</p>
+
+    <div class="mtotal tile" aria-live="polite">
+      <div class="mt-main">
+        <div class="lb" id="m-lb">All spending</div>
+        <div class="big" id="m-eur">€0</div>
+        <div class="sm" id="m-twd">NT$0</div>
+      </div>
+    </div>
+
+    <div class="mchips" id="m-days" role="group" aria-label="Filter by day"></div>
+
+    <form class="mform tile" id="m-form" autocomplete="off">
+      <div class="mrow"><span>Amount</span><input id="m-amt" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0" required></div>
+      <div class="mrow"><span>Currency</span><div class="seg" data-f="c"><button type="button" data-v="EUR" aria-pressed="true">€ Euro</button><button type="button" data-v="TWD" aria-pressed="false">NT$</button></div></div>
+      <div class="mrow"><span>Paid by</span><div class="seg" data-f="pm"><button type="button" data-v="card" aria-pressed="true">Card</button><button type="button" data-v="cash" aria-pressed="false">Cash</button></div></div>
+      <div class="mrow"><span>Category</span><select id="m-cat"></select></div>
+      <div class="mrow"><span>Day</span><select id="m-day"></select></div>
+      <div class="mrow"><span>Note</span><input id="m-note" type="text" placeholder="e.g. Dandoy waffle"></div>
+      <button class="mbtn" type="submit">Add</button>
+    </form>
+
+    <div id="m-brk-wrap" hidden>
+      <h3 class="mh">By category</h3>
+      <div class="mbrk" id="m-brk"></div>
+    </div>
+
+    <h3 class="mh">Entries</h3>
+    <ul class="mlist" id="m-list"></ul>
+
+    <h3 class="mh">Settings</h3>
+    <div class="mset tile">
+      <div class="rate"><label for="m-rate">Rate</label>€1 = <input id="m-rate" type="number" inputmode="decimal" step="0.01" min="0"> NT$</div>
+      <textarea id="m-copy" aria-hidden="true" tabindex="-1"></textarea>
+      <button class="mbtn ghost" type="button" id="m-tsv">Copy as table</button>
+      <button class="mbtn ghost warn" type="button" id="m-clear">Clear all expenses</button>
+      <p class="mmsg" id="m-msg" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+<!-- Stay -->
+<section id="stay">
+  <div class="wrap">
+    <div class="sec-head">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="6" fill="#DCE6F6" stroke="#14213D" stroke-width="2"/><path d="M11 34 V16 h3 v-4 h3 v-4 h6 v4 h3 v4 h3 V34Z" fill="#1F4FA3" stroke="#14213D" stroke-width="2" stroke-linejoin="round"/><rect x="17" y="26" width="6" height="8" fill="#EE7413" stroke="#14213D" stroke-width="1.5"/><g fill="#FFFFFF"><rect x="14" y="18" width="4" height="4"/><rect x="22" y="18" width="4" height="4"/></g></svg>
+      <div><div class="eyebrow">Stay</div><h2>Where we stay</h2></div>
+    </div>
+    <div class="stays">
+      <article class="stay tile">
+        <div class="stay-art">
+          <svg viewBox="0 0 300 100" aria-hidden="true">
+            <g stroke="#14213D" stroke-width="2.2" stroke-linejoin="round">
+              <path d="M40 100 V38 q0 -10 8 -12 q4 -10 10 -10 q6 0 10 10 q8 2 8 12 V100Z" fill="#9C3B2E"/>
+              <path d="M76 100 V30 h8 v-12 h20 v12 h8 V100Z" fill="#1F4FA3"/>
+              <path d="M112 100 V44 l18 -22 l18 22 V100Z" fill="#E8B53E"/>
+            </g>
+            <g fill="#FFFFFF" stroke="#14213D" stroke-width="1.5">
+              <rect x="47" y="46" width="8" height="10"/><rect x="61" y="46" width="8" height="10"/><rect x="83" y="38" width="8" height="10"/><rect x="97" y="38" width="8" height="10"/><rect x="83" y="58" width="8" height="10"/><rect x="97" y="58" width="8" height="10"/><rect x="119" y="52" width="8" height="10"/><rect x="133" y="52" width="8" height="10"/>
+            </g>
+            <rect x="90" y="80" width="12" height="20" fill="#EE7413" stroke="#14213D" stroke-width="2"/>
+            <g transform="translate(190,72)" stroke="#14213D" stroke-width="2" fill="none">
+              <circle cx="0" cy="16" r="10"/><circle cx="36" cy="16" r="10"/>
+              <path d="M0 16 L13 0 H29 L36 16 M13 0 L19 16 L29 0 M10 -5 h8 M29 0 v-6 h6"/>
+            </g>
+          </svg>
+        </div>
+        <div class="stay-body">
+          <h3>Lanternhof Canal Lantern Hotel (fictional)</h3>
+          <div class="en">10/18 – 10/21, 10/22 – 10/24 · 5 nights</div>
+          <dl class="kv">
+            <dt>City</dt><dd>Amsterdam</dd>
+            <dt>Address</dt><dd>Central Amsterdam (placeholder, near Dam Square)</dd>
+            <dt>Airport</dt><dd>Amsterdam Centraal to Schiphol, about 15 min by train</dd>
+            <dt>Luggage</dt><dd>Check out for the Belgium night, leave the big bags in the hotel luggage room and take just an overnight bag</dd>
+            <dt>Check-in</dt><dd>From 15:00. Arrive early and you can drop your bags first</dd>
+          </dl>
+        </div>
+      </article>
+      <article class="stay tile">
+        <div class="stay-art">
+          <svg viewBox="0 0 300 100" aria-hidden="true">
+            <g stroke="#14213D" stroke-width="2.2" stroke-linejoin="round">
+              <path d="M120 100 V20 h20 V100Z" fill="#B8A894"/>
+              <path d="M116 22 h28 l-4 -10 h-20Z" fill="#14213D"/>
+              <path d="M40 100 V50 h6 v-8 h6 v-8 h6 v-8 h12 v8 h6 v8 h6 v8 h6 V100Z" fill="#C8342B"/>
+              <path d="M160 100 V54 h6 v-8 h6 v-8 h12 v8 h6 v8 h6 V100Z" fill="#E8B53E"/>
+            </g>
+            <g fill="#FFFFFF" stroke="#14213D" stroke-width="1.5">
+              <rect x="53" y="58" width="8" height="10"/><rect x="67" y="58" width="8" height="10"/><rect x="53" y="76" width="8" height="10"/><rect x="67" y="76" width="8" height="10"/>
+              <rect x="126" y="34" width="8" height="12"/><rect x="126" y="56" width="8" height="12"/>
+              <rect x="171" y="62" width="8" height="10"/><rect x="185" y="62" width="8" height="10"/>
+            </g>
+            <rect x="0" y="92" width="300" height="8" fill="#1F4FA3"/>
+          </svg>
+        </div>
+        <div class="stay-body">
+          <h3>Kantwerk Inn (fictional)</h3>
+          <div class="en">Brugge · check in Thu 10/21, check out Fri 10/22</div>
+          <dl class="kv">
+            <dt>Status</dt><dd>Booked (sample)</dd><dt>Address</dt><dd>Inside Bruges old town (placeholder)</dd>
+            <dt>Area</dt><dd>Inside the old town, around the Markt or Rozenhoedkaai, easiest for evening and morning walks</dd>
+            <dt>Station</dt><dd>Bruges station to the Markt is about a 20-min walk, or 5 min by bus</dd>
+            <dt>Check-out</dt><dd>Leave the overnight bag in the morning, pick it up before heading to Ghent</dd>
+          </dl>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Must eat -->
+<section id="eat">
+  <div class="wrap">
+    <div class="sec-head">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="6" fill="#DCE6F6" stroke="#14213D" stroke-width="2"/><rect x="9" y="10" width="22" height="20" rx="3" fill="#E8B53E" stroke="#14213D" stroke-width="2"/><path d="M9 17 h22 M9 23 h22 M16 10 v20 M24 10 v20" stroke="#14213D" stroke-width="1.6"/></svg>
+      <div><div class="eyebrow">Must eat</div><h2>Must-eat list</h2></div>
+    </div>
+    <p class="lead">Places already in the plan. Tap one to open it in Google Maps.</p>
+    <div id="eat-list"></div>
+    <p class="lead" style="margin-top:4px">Opening hours are pulled from online info, so double-check on Google Maps before you go.</p>
+  </div>
+</section>
+
+<!-- Plan B -->
+<section id="options">
+  <div class="wrap">
+    <div class="sec-head">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="6" fill="#DCE6F6" stroke="#14213D" stroke-width="2"/><path d="M12 30 L20 8 L28 30 L20 25Z" fill="#1F4FA3" stroke="#14213D" stroke-width="2" stroke-linejoin="round"/></svg>
+      <div><div class="eyebrow">Plan B</div><h2>Plan B ideas</h2></div>
+    </div>
+    <p class="lead">Backups for rain, tired legs or spare time, grouped by city.</p>
+    <div id="options-list"></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <p>2027.10.17 – 10.25 · Sample trip. Flights, hotels and amounts are all fictional</p>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+  var TR = {
+    plane:['Flight','tr-plane'], ns:['Train','tr-ns'], euro:['Eurostar','tr-euro'], sncb:['SNCB train','tr-sncb'],
+    tram:['Tram','tr-tram'], metro:['Metro','tr-train'], bus:['Bus','tr-bus'], boat:['Boat','tr-boat'], walk:['Walk','tr-walk']
+  };
+  var M = 'https://www.google.com/maps/search/?api=1&query=';
+  function map(q){ return M + encodeURIComponent(q); }
+
+  var DAYS = [
+    {
+      d:'10/18', w:'Mon', c:'nl', k:'Arrive · Canals',
+      title:'Amsterdam canal ring',
+      note:'Land in the morning and drop the bags at the hotel. Afternoon: the Nine Streets, Anne Frank House and the Jordaan, then a canal cruise at dusk. Early night to beat the jet lag.',
+      items:[
+        {t:'Eve', tr:'plane', name:'Sun 10/17 23:30 depart Taoyuan, XA 801', p:'14h 45m in the air.'},
+        {ll:[52.3105,4.7683], t:'08:15', tr:'plane', name:'Land at Schiphol', p:'First time into Schengen means fingerprints and a photo at the EES kiosks, so immigration can be slow.'},
+        {t:'09:30', tr:'ns', name:'Schiphol → Amsterdam Centraal', p:'About 15 min. Just tap your credit card at the gates, and use the same card to tap in and out.'},
+        {t:'10:15', tr:'walk', name:'Drop bags at the hotel, take a break', p:'Too early to check in, so leave the bags and grab a coffee nearby.'},
+        {ll:[52.3765,4.8839], t:'12:30', tr:'tram', must:true, name:'Lunch: Dutch pancakes', p:'The Pancake Bakery, Prinsengracht 191. Sweet or savory. Dutch pancakes are big and thin.', q:'The Pancake Bakery Amsterdam', alt:'Pancakes Amsterdam (near the Nine Streets).'},
+        {ll:[52.3696,4.8846], t:'13:30', tr:'walk', must:true, name:'The Nine Streets (De 9 Straatjes)', p:'Nine little streets between three canals: small shops, vintage and coffee.', q:'De 9 Straatjes Amsterdam'},
+        {ll:[52.3752,4.8840], t:'15:00', tr:'walk', must:true, book:true, name:'Anne Frank House', p:'Official site only. Tickets drop every Tuesday at 10:00 for six weeks ahead. About 1 hour.', q:'Anne Frank Huis', alt:'Missed out? A few same-day tickets go up on the site at 9:00.'},
+        {ll:[52.3784,4.8862], t:'16:15', tr:'walk', name:'Jordaan → Winkel 43', p:'Wander past the Westerkerk and little canal bridges. Winkel 43’s apple pie with whipped cream, expect a line.', q:'Winkel 43 Amsterdam'},
+        {ll:[52.3738,4.8852], t:'17:30', tr:'boat', must:true, name:'Canal cruise', p:'About 1 hour. Sunset is around 18:40, so the light is best now. Board near the Anne Frank House or in front of Centraal.', q:'Amsterdam canal cruise Anne Frank', alt:'Those Dam Boat Guys, Blue Boat Company or Lovers all work. Buy on the spot or on GetYourGuide.'},
+        {ll:[52.3735,4.8775], t:'19:00', tr:'walk', must:true, book:true, name:'Dinner: Moeders, Dutch home cooking', p:'Rozengracht 251. Stews and stamppot (mash), and the walls are covered in photos of guests’ moms. Book ahead.', q:'Moeders Amsterdam'},
+        {t:'20:30', tr:'tram', name:'Back to the hotel', p:'Early night.', alt:'Still got energy? Walk through the Red Light District (De Wallen) at night. No photos of the windows.'}
+      ]
+    },
+    {
+      d:'10/19', w:'Tue', c:'nl', k:'Windmills · Museums',
+      title:'Windmills + Museumplein',
+      note:'Zaanse Schans first thing, before the tour buses. Lunch at the Albert Cuyp market, then the Rijksmuseum and Van Gogh Museum in the afternoon.',
+      items:[
+        {t:'08:30', tr:'ns', name:'Centraal → Zaandijk Zaanse Schans', p:'Local train toward Uitgeest, about 17 min, then a 10-min walk.'},
+        {ll:[52.4740,4.8180], t:'09:00', tr:'walk', must:true, name:'Zaanse Schans windmills', p:'Windmills along the dike, a cheese farm and a clog workshop. They’ve announced an entry fee of about €17.5, so check the official site before you go.', q:'Zaanse Schans', alt:'Want more windmills? Kinderdijk on Saturday.'},
+        {t:'11:30', tr:'ns', name:'Back to Centraal → Metro 52 to De Pijp', p:'17 min by train, then about 5 min on Metro line 52.'},
+        {ll:[52.3557,4.8939], t:'12:15', tr:'walk', must:true, name:'Lunch: Albert Cuyp Market', p:'Open Mon–Sat. Fresh stroopwafels, kibbeling (fried fish bites), raw herring and poffertjes (mini pancakes).', q:'Albert Cuyp Markt', alt:'Closed on Sundays, which is why it’s today.'},
+        {ll:[52.3600,4.8852], t:'13:30', tr:'walk', must:true, book:true, name:'Rijksmuseum', p:'15-min walk from the market. The Night Watch and The Milkmaid. Book a time slot online, open 09:00–17:00.', q:'Rijksmuseum'},
+        {ll:[52.3584,4.8811], t:'15:45', tr:'walk', must:true, book:true, name:'Van Gogh Museum', p:'Right next door. Timed tickets online only, about 1.5 hours, open until 18:00.', q:'Van Gogh Museum'},
+        {ll:[52.3580,4.8686], t:'17:45', tr:'walk', name:'Museumplein → Vondelpark', p:'A short stroll, head back before dark.'},
+        {ll:[52.3540,4.8550], t:'19:00', tr:'tram', must:true, book:true, name:'Dinner: Indonesian rijsttafel', p:'Restaurant Blauw, Amstelveenseweg 158. A dozen-plus small dishes at once, a leftover from the Dutch colonial era. Book ahead.', q:'Restaurant Blauw Amsterdam'},
+        {t:'21:00', tr:'tram', name:'Back to the hotel'}
+      ]
+    },
+    {
+      d:'10/20', w:'Wed', c:'nl', k:'Giethoorn',
+      title:'Giethoorn day trip',
+      note:'A full day in Giethoorn up in the northeast, driving your own electric boat. About 2 hours each way, so start early. Weekdays are quieter than weekends.',
+      items:[
+        {t:'07:45', tr:'ns', name:'Centraal → Steenwijk', p:'Intercity toward Leeuwarden or Groningen, sometimes with a change in Zwolle, about 1h 50m. Check the NS app.'},
+        {t:'09:45', tr:'bus', name:'Bus 70 → Giethoorn', p:'From next to the station, get off at Dominee Hylkemaweg, about 20 min. Tap your credit card here too.'},
+        {ll:[52.7395,6.0790], t:'10:15', tr:'boat', must:true, name:'Rent a whisper boat', p:'Electric, no license needed. 1–2 hours, about €25–35 an hour. Still running in October, maybe with shorter hours.', q:'Giethoorn whisper boat rental', alt:'Don’t want to steer? Take a guided boat with a skipper, about €12 each.'},
+        {ll:[52.7330,6.0782], t:'12:30', tr:'walk', name:'Lunch by the canal', p:'Cafés along the Binnenpad: pancakes, soup, sandwiches.'},
+        {ll:[52.7262,6.0812], t:'13:30', tr:'walk', must:true, name:'Walk the Binnenpad', p:'Follow the little canal past thatched-roof houses and wooden bridges.'},
+        {t:'15:00', tr:'bus', name:'Back to Steenwijk → Amsterdam', p:'Back at Centraal around 17:30.'},
+        {ll:[52.3770,4.8825], t:'18:30', tr:'walk', must:true, name:'Brown café: bitterballen + beer', p:'Café \'t Smalle, Egelantiersgracht 12 in the Jordaan. Bitterballen with mustard in an old wooden bar.', q:'Cafe t Smalle Amsterdam'},
+        {t:'20:00', tr:'walk', name:'Back to the hotel, pack the overnight bag', p:'Belgium tomorrow. Check out and leave the big luggage at the hotel.', alt:'Fancy going out? Take the free ferry from behind Centraal to Noord and catch the night view from A\'DAM Lookout.'}
+      ]
+    },
+    {
+      d:'10/21', w:'Thu', c:'be', k:'Brussels → Bruges',
+      title:'Brussels → Bruges',
+      note:'Morning Eurostar to Brussels: Grand-Place, Manneken Pis, waffles, chocolate and fries all in one go. Evening train to Bruges for the night.',
+      items:[
+        {t:'09:00', tr:'euro', must:true, book:true, name:'Eurostar Amsterdam → Brussels-Midi', p:'Direct, about 1h 52m. The earlier you book, the cheaper.'},
+        {t:'11:00', tr:'sncb', name:'Midi → Brussels-Central', p:'One stop by train, then a 5-min walk to the Grand-Place.'},
+        {ll:[50.8467,4.3525], t:'11:15', tr:'walk', must:true, name:'Grand-Place', p:'UNESCO-listed square ringed by golden guild houses and the town hall.', q:'Grand-Place Brussels'},
+        {ll:[50.8450,4.3500], t:'11:45', tr:'walk', must:true, name:'Manneken Pis', p:'5 min from the Grand-Place. He’s tiny, and often dressed up.', q:'Manneken Pis'},
+        {ll:[50.8476,4.3522], t:'12:00', tr:'walk', must:true, name:'Maison Dandoy waffles', p:'Rue au Beurre 31. Get one Brussels waffle (square, light and crisp) and one Liège waffle (round, with pearl sugar).', q:'Maison Dandoy Rue au Beurre'},
+        {ll:[50.8481,4.3546], t:'12:40', tr:'walk', must:true, name:'Chocolate at Galeries Saint-Hubert', p:'Glass-roofed arcade. Neuhaus invented the praline, Mary is a royal supplier.', q:'Galeries Royales Saint-Hubert'},
+        {ll:[50.8479,4.3497], t:'13:30', tr:'walk', must:true, name:'Lunch: Fritland fries', p:'Next to the Bourse. Belgian fries are fried twice, with mayo or andalouse sauce.', q:'Fritland Brussels', alt:'Want a sit-down pot of mussels and fries? Chez Léon (Rue des Bouchers, touristy but a classic).'},
+        {ll:[50.8440,4.3567], t:'14:30', tr:'walk', name:'Mont des Arts', p:'Walk up for a view over the city, with Place Royale right beside it.', q:'Mont des Arts Brussels', alt:'Into surrealism? The Magritte Museum is next door.'},
+        {t:'15:15', tr:'metro', name:'Metro line 6 → Atomium', p:'Get off at Heysel, about 25 min. You can tap your credit card on the city metro.', q:'Atomium'},
+        {ll:[50.8949,4.3415], t:'15:45', tr:'walk', name:'Atomium', p:'Photos from outside are enough. Going in is about €17, open until 18:00.'},
+        {t:'16:45', tr:'metro', name:'Back to Brussels-Central'},
+        {t:'17:30', tr:'sncb', name:'Brussels-Central → Bruges', p:'Intercity, about 1 hour, every half hour, no reservation needed. Buy tickets in the SNCB app.'},
+        {t:'18:45', tr:'walk', name:'Check in at the Bruges inn', p:'Kantwerk Inn (fictional), about a 20-min walk from the station into the old town.'},
+        {ll:[51.2096,3.2265], t:'19:30', tr:'walk', must:true, book:true, name:'Dinner: Cambrinus', p:'Philipstockstraat 19. Stoofvlees (beef stewed in beer) with fries, and a very thick beer menu. Book ahead.', q:'Cambrinus Brugge'},
+        {ll:[51.2080,3.2250], t:'21:00', tr:'walk', must:true, name:'The Markt and Rozenhoedkaai at night', p:'The belfry and canals are lit up, and hardly anyone’s around.', q:'Rozenhoedkaai Brugge'}
+      ]
+    },
+    {
+      d:'10/22', w:'Fri', c:'be', k:'Bruges → Ghent',
+      title:'Bruges → Ghent → back to NL',
+      note:'Morning in Bruges with a canal boat, Ghent in the afternoon for the castle and the Ghent Altarpiece, then back to the Netherlands via Antwerp in the evening.',
+      items:[
+        {ll:[51.2073,3.2263], t:'08:30', tr:'walk', must:true, name:'Rozenhoedkaai in the morning', p:'The classic Bruges postcard view, and empty this early.', q:'Rozenhoedkaai Brugge'},
+        {ll:[51.2085,3.2245], t:'09:00', tr:'walk', must:true, name:'Belfry (Belfort)', p:'366 steps, opens 09:00, buy a timed ticket online. The whole old town from the top.', q:'Belfort Brugge'},
+        {ll:[51.2063,3.2275], t:'10:00', tr:'boat', must:true, name:'Canal boat', p:'About 30 min. Queue and buy on the spot, runs March to mid-November.', q:'Bruges boat tour Rozenhoedkaai'},
+        {ll:[51.2004,3.2234], t:'10:45', tr:'walk', name:'Begijnhof → Minnewater', p:'White houses and a quiet lawn, and swans on the Minnewater (Lake of Love).', q:'Begijnhof Brugge'},
+        {ll:[51.2033,3.2246], t:'11:30', tr:'walk', name:'De Halve Maan brewery', p:'Home of Brugse Zot. Fine to just have a beer and skip the tour. Pick up chocolate at The Chocolate Line nearby.', q:'De Halve Maan Brugge'},
+        {t:'12:30', tr:'walk', name:'Lunch at the Markt fry stand → grab the overnight bag', p:'The green fry stands under the belfry.'},
+        {t:'13:30', tr:'sncb', name:'Bruges → Gent-Sint-Pieters', p:'About 25 min. Ghent station is far from the center, so take tram 1 to Korenmarkt, about 15 min.'},
+        {ll:[51.0545,3.7205], t:'14:15', tr:'walk', must:true, name:'Graslei', p:'Look at the guild houses on both banks from St Michael’s Bridge.', q:'Graslei Gent'},
+        {ll:[51.0573,3.7208], t:'15:00', tr:'walk', must:true, name:'Gravensteen castle', p:'Medieval castle right in town, about 1 hour.', q:'Gravensteen'},
+        {ll:[51.0530,3.7265], t:'16:15', tr:'walk', must:true, name:'St Bavo’s Cathedral, Ghent Altarpiece', p:'The Van Eyck brothers’ Adoration of the Mystic Lamb. Separate ticket, with an AR guide.', q:'Sint-Baafskathedraal Gent'},
+        {ll:[51.0563,3.7222], t:'17:15', tr:'walk', name:'Cuberdons at Groentenmarkt', p:'Carts on the Groentenmarkt sell these purple cone-shaped raspberry candies, a Ghent thing.', q:'Groentenmarkt Gent'},
+        {t:'18:00', tr:'walk', name:'Dinner in Ghent', p:'Small restaurants in the old Patershol quarter.', alt:'Ghent waffles, or Ghent-style chicken waterzooi.'},
+        {t:'19:30', tr:'sncb', name:'Ghent → Antwerpen-Centraal', p:'About 50 min. Antwerp station’s main hall is gorgeous, take a look while you change trains.'},
+        {t:'20:30', tr:'euro', book:true, name:'Antwerp → Amsterdam', p:'Eurostar takes about 1h 15m; the cheaper intercity takes about 2 hours. Back at the Amsterdam hotel around 22:00 to check in again.'}
+      ]
+    },
+    {
+      d:'10/23', w:'Sat', c:'nl', k:'Rotterdam · Kinderdijk',
+      title:'Rotterdam + Kinderdijk + Delft',
+      note:'Rotterdam’s market hall and cube houses in the morning, a waterbus to Kinderdijk for its 19 windmills, then Delft blue pottery and canals in the afternoon.',
+      items:[
+        {t:'08:30', tr:'ns', name:'Amsterdam → Rotterdam Centraal', p:'Intercity, about 1h 10m. Intercity Direct is faster but needs a supplement.'},
+        {t:'09:50', tr:'metro', name:'Metro to Blaak', p:'One stop.'},
+        {ll:[51.9200,4.4870], t:'10:00', tr:'walk', must:true, name:'Markthal', p:'A horseshoe-shaped building with a giant fruit-and-veg mural on the ceiling. Graze your way through brunch inside.', q:'Markthal Rotterdam'},
+        {ll:[51.9203,4.4907], t:'10:40', tr:'walk', must:true, name:'Cube Houses', p:'Right across from the Markthal, and you can tour the show house.', q:'Kubuswoningen Rotterdam'},
+        {t:'11:15', tr:'walk', name:'Walk to the Erasmusbrug pier', p:'About 15 min.'},
+        {ll:[51.9095,4.4860], t:'11:30', tr:'boat', must:true, name:'Waterbus 202 → Kinderdijk', p:'About 35 min. The winter timetable may kick in late October with fewer boats, so check waterbus.nl first.', q:'Waterbus Erasmusbrug'},
+        {ll:[51.8840,4.6390], t:'12:15', tr:'walk', must:true, name:'Kinderdijk', p:'UNESCO site with 19 18th-century windmills lined up along the water. The paths are free; you only pay to go into the mill museums (about €18.5 on weekends).', q:'Kinderdijk'},
+        {t:'14:30', tr:'boat', name:'Waterbus back to Rotterdam'},
+        {t:'15:15', tr:'ns', name:'Rotterdam → Delft', p:'About 15 min by train.'},
+        {ll:[52.0116,4.3594], t:'15:45', tr:'walk', must:true, name:'Delft Markt and Nieuwe Kerk', p:'Vermeer’s hometown. The New Church and town hall face each other across the square, and the canals are calmer than Amsterdam’s.', q:'Markt Delft'},
+        {ll:[52.0028,4.3667], t:'16:30', tr:'walk', name:'Royal Delft blue pottery', p:'Royal Delft factory and museum, closes 17:00. There are small Delft blue shops in town too.', q:'Royal Delft'},
+        {t:'17:30', tr:'walk', name:'Sunset on the Delft canals', p:'Sunset around 18:30.'},
+        {t:'18:30', tr:'walk', name:'Dinner in Delft', p:'Restaurants around the Markt.'},
+        {t:'20:00', tr:'ns', name:'Delft → Amsterdam', p:'About 1 hour.'}
+      ]
+    },
+    {
+      d:'10/24', w:'Sun', c:'nl', k:'Last shop · Home',
+      title:'Amsterdam → home to Taiwan',
+      note:'Check out and leave the bags. Flower market and fries in the morning, souvenirs once the shops open at noon, then grab the bags and head to the airport.',
+      items:[
+        {ll:[52.3667,4.8913], t:'09:30', tr:'tram', name:'Bloemenmarkt flower market', p:'A floating flower market on the Singel: tulip bulbs and clog souvenirs.', q:'Bloemenmarkt Amsterdam', alt:'Bringing bulbs into Taiwan needs a phytosanitary certificate, so buy packs that come with one.'},
+        {ll:[52.3685,4.8916], t:'10:30', tr:'walk', must:true, name:'Van Wonderen fresh stroopwafels', p:'Kalverstraat 190. Pressed to order, and you can get them dipped in chocolate.', q:'Van Wonderen Stroopwafels Kalverstraat'},
+        {ll:[52.3672,4.8897], t:'11:00', tr:'walk', must:true, name:'Vleminckx fries', p:'Voetboogstraat 33, Amsterdam’s most famous fry stand. Go with mayo or satay sauce.', q:'Vleminckx de Sausmeester'},
+        {ll:[52.3712,4.8919], t:'12:00', tr:'walk', name:'Souvenir shopping', p:'Shops open at 12:00 on Sundays. Stroopwafels and cheese at Albert Heijn; Henri Willig cheese shop can vacuum-pack.', q:'Henri Willig Amsterdam'},
+        {t:'13:30', tr:'walk', name:'Lunch: raw herring stand', p:'Hold it by the tail and swallow it whole, or have it in a bun.', alt:'Not into raw fish? Foodhallen food hall.'},
+        {t:'15:15', tr:'tram', name:'Back to the hotel for the bags'},
+        {t:'16:15', tr:'ns', name:'Amsterdam → Schiphol', p:'About 15 min by train.'},
+        {ll:[52.3105,4.7683], t:'16:45', tr:'plane', name:'At Schiphol, check in', p:'Got tax-free purchases? Hit Global Blue for the refund first.'},
+        {t:'19:50', tr:'plane', name:'XA 802 departs', p:'Lands in Taoyuan Mon 10/25 at 14:40.'}
+      ]
+    }
+  ];
+
+  var TODO = [
+    ['Anne Frank House tickets', 'annefrank.org. Tickets drop every Tuesday at 10:00 for six weeks ahead, so 10/18 is already on sale', true],
+    ['Rijksmuseum + Van Gogh Museum time slots', 'Tue 10/19, 13:30 and 15:45', true],
+    ['Eurostar Amsterdam → Brussels', 'Thu 10/21 morning, cheaper the earlier you book', true],
+    ['One night in Bruges', 'Thu 10/21, inside the old town', true],
+    ['Antwerp → Amsterdam return tickets', 'Fri 10/22 evening, Eurostar or intercity'],
+    ['Restaurant bookings', 'Moeders, Blauw, Cambrinus'],
+    ['Confirm hotel booking + luggage storage', 'Check out for the Belgium night, leave big bags at the hotel'],
+    ['Turn on contactless on your credit card', 'Tap straight onto Dutch trains, trams and buses, in and out. Bring €100 cash as backup'],
+    ['Download apps', 'NS, SNCB, 9292, Google Maps offline maps'],
+    ['EU two-pin plug adapter', 'Type C or F, 230V'],
+    ['Check ETIAS', 'EU travel authorization. Check whether it’s live yet and if you need to apply'],
+    ['Rain jacket + layers', 'Late October is about 8–14°C, often rainy and windy'],
+    ['Travel insurance, flight screenshots', 'XA 801, XA 802'],
+    ['Luggage scale', 'Lots of souvenirs on the way back, don’t go overweight']
+  ];
+
+  var EAT = [
+    {area:'Netherlands', c:'nl', items:[
+      ['The Pancake Bakery','Pancakes 10/18','The Pancake Bakery Amsterdam'],
+      ['Winkel 43','Apple pie 10/18','Winkel 43 Amsterdam'],
+      ['Moeders','Home cooking 10/18','Moeders Amsterdam'],
+      ['Albert Cuyp Markt','Stroopwafel, herring 10/19','Albert Cuyp Markt'],
+      ['Restaurant Blauw','Rijsttafel 10/19','Restaurant Blauw Amsterdam'],
+      ['Café \'t Smalle','Bitterballen 10/20','Cafe t Smalle Amsterdam'],
+      ['Markthal','Rotterdam market 10/23','Markthal Rotterdam'],
+      ['Van Wonderen','Stroopwafels 10/24','Van Wonderen Stroopwafels Kalverstraat'],
+      ['Vleminckx','Fries 10/24','Vleminckx de Sausmeester']
+    ]},
+    {area:'Belgium', c:'be', items:[
+      ['Maison Dandoy','Waffles 10/21','Maison Dandoy Rue au Beurre'],
+      ['Neuhaus','Chocolate 10/21','Neuhaus Galerie de la Reine'],
+      ['Fritland','Fries 10/21','Fritland Brussels'],
+      ['Cambrinus','Beer-stewed beef 10/21','Cambrinus Brugge'],
+      ['De Halve Maan','Beer 10/22','De Halve Maan Brugge'],
+      ['The Chocolate Line','Chocolate 10/22','The Chocolate Line Brugge'],
+      ['Groentenmarkt carts','Cuberdons 10/22','Groentenmarkt Gent']
+    ]}
+  ];
+
+  var OPTIONS = [
+    {area:'Amsterdam', fit:'Rain or evenings', items:[
+      ['A\'DAM Lookout','Noord · lookout + swing'],['NDSM Wharf','Noord · graffiti, flea market'],['Heineken Experience','Heineken brewery tour'],['Moco Museum','Banksy, street art'],
+      ['Foodhallen','Food hall'],['Begijnhof Amsterdam','Quiet courtyard'],['De Wallen','Red Light District, no photos'],['Brouwerij \'t IJ','Brewery under a windmill'],['Noordermarkt','Mon flea market, Sat organic market'],['NEMO Science Museum','Free rooftop view']
+    ]},
+    {area:'Around Amsterdam', fit:'Extra day, or swap out Giethoorn', items:[
+      ['Volendam','Fishing village, traditional-dress photos'],['Marken','Island of wooden houses'],['Edam','Cheese town'],['Haarlem','Old town, 15 min by train'],['Utrecht','Sunken canal wharves, Dom Tower']
+    ]},
+    {area:'The Hague · Rotterdam', fit:'Swap for 10/23', items:[
+      ['Mauritshuis','Girl with a Pearl Earring'],['Scheveningen','The Hague’s beach'],['Fenix Rotterdam','Migration museum, tornado staircase'],['Depot Boijmans Van Beuningen','Mirrored art depot'],['Euromast','Rotterdam’s tower'],['Hotel New York Rotterdam','Coffee at the old harbor']
+    ]},
+    {area:'Brussels', fit:'Swap for 10/21', items:[
+      ['Maison Antoine','Fries on Place Jourdan'],['Magritte Museum','Magritte'],['Delirium Café','Pink-elephant beer'],['Place du Grand Sablon','Chocolate row, Pierre Marcolini'],['Jeanneke Pis','The peeing girl'],['Chez Léon','Mussels']
+    ]},
+    {area:'Bruges · Ghent · Antwerp', fit:'Swap for 10/22', items:[
+      ['2be Beer Wall','Bruges beer wall'],['Choco-Story Brugge','Chocolate museum'],['Minnewater','Lake of Love'],['Werregarenstraat','Ghent graffiti alley'],['Antwerpen-Centraal','Prettiest station'],['MAS Antwerpen','Free rooftop port view'],['Grote Markt Antwerpen','Antwerp’s main square']
+    ]}
+  ];
+
+  var state = {day:0, mv:'route'};
+  try { var s = JSON.parse(localStorage.getItem('nlbe-pub-en-view')||'{}'); if (s.day in DAYS) state.day = s.day; if (s.mv in {route:1,stops:1,g:1}) state.mv = s.mv; } catch(e){}
+  var hm = location.hash.match(/^#day([1-7])$/); if (hm) state.day = +hm[1] - 1;
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  var CTRY = {nl:['Netherlands','c-nl'], be:['Belgium','c-be']};
+
+  /* ── Map ──────────────────────────────────────────────
+     Base map: Natural Earth 10m borders / lakes / rivers, simplified and drawn by lat/lon (equirectangular, corrected at 52°N).
+     Each stop's ll:[lat, lon] is approximate, used to draw the Stops map and its numbers.          */
+  var BASE = {"lon0": 2.45, "lat1": 53.6, "kx": 125.0, "ky": 203.0337, "nl": "M593.1 72.1 593.2 84.3 590.2 93.9 590.3 96.3 591.9 100.4 593.0 114.9 592.9 122.2 591.7 128.7 589.0 135.5 578.7 151.4 576.5 157.6 575.4 164.3 573.3 193.4 571.1 197.8 564.7 195.6 558.6 196.5 551.9 194.5 540.1 194.7 535.9 196.0 531.5 199.2 532.5 201.3 531.7 206.5 536.7 211.2 529.8 214.7 527.7 214.9 529.3 218.1 530.6 228.3 533.1 231.1 536.4 232.7 546.3 234.1 552.8 236.6 556.3 237.2 562.7 236.0 565.4 233.2 573.0 245.5 574.8 250.7 573.7 258.1 570.3 267.0 570.2 270.7 572.4 277.0 572.0 278.0 566.5 281.4 562.2 287.7 559.7 290.0 554.4 292.3 551.9 294.8 549.2 300.5 547.6 301.9 539.5 302.8 537.5 304.0 535.4 306.2 532.7 311.2 528.7 312.6 527.9 314.7 528.1 317.8 541.0 324.6 544.9 329.0 545.1 332.9 542.5 334.8 539.6 340.0 536.7 343.5 533.3 345.3 522.3 345.7 509.8 349.9 501.6 355.6 499.1 355.6 491.1 353.3 492.1 357.8 491.6 359.9 486.9 361.2 486.5 358.0 484.5 356.8 479.7 356.1 476.8 352.0 471.9 352.8 467.7 351.0 463.7 347.7 459.6 345.8 455.4 348.1 461.6 354.3 463.3 356.9 454.2 354.6 449.2 355.9 444.8 358.8 437.3 360.8 435.2 362.3 434.8 364.1 437.6 366.3 439.3 370.2 439.0 374.3 436.3 377.1 436.2 379.3 441.0 379.7 445.3 382.5 446.5 383.8 444.8 389.6 447.7 393.3 456.1 397.0 454.0 404.5 454.6 407.0 467.9 424.5 469.4 434.8 467.8 446.9 469.7 449.2 467.9 457.9 466.7 459.7 462.2 463.3 455.8 475.3 451.9 480.9 450.8 484.9 450.5 489.4 451.4 493.2 454.3 494.9 460.5 490.5 463.4 491.5 459.5 494.5 462.2 497.0 460.3 499.5 453.2 503.4 441.6 512.7 436.0 521.6 433.7 521.9 428.8 517.3 425.3 519.2 426.0 524.0 427.9 529.8 428.1 534.9 434.7 532.4 439.7 533.8 444.2 533.2 444.5 534.3 443.2 537.7 443.7 542.2 447.6 545.2 451.7 546.7 450.6 549.9 451.6 554.1 450.8 557.8 449.4 559.5 446.6 559.3 444.9 560.3 443.8 562.3 444.2 565.9 443.5 568.3 441.7 570.1 439.8 569.6 440.4 572.2 443.4 576.0 443.1 578.7 440.6 579.1 431.5 578.8 428.7 577.9 417.9 578.2 412.8 573.9 409.7 577.8 407.1 577.8 404.8 576.4 406.3 569.4 401.7 567.5 398.8 565.4 396.8 562.3 396.5 557.8 405.6 547.4 409.0 545.8 414.3 536.1 411.8 535.3 409.0 536.1 414.0 528.1 415.9 523.1 414.3 520.7 415.2 516.1 416.2 515.4 417.7 516.7 418.6 515.4 420.2 511.2 419.4 508.3 422.1 508.2 424.5 506.9 421.7 503.8 422.1 501.5 423.8 499.7 422.4 496.1 420.3 495.9 416.4 496.9 412.1 491.8 410.1 490.6 401.1 491.5 396.9 487.9 389.8 485.7 386.9 483.2 385.6 474.7 383.3 471.6 380.4 469.7 377.7 469.4 370.0 474.4 367.4 475.4 352.6 474.7 347.9 475.9 345.7 475.4 345.6 468.1 343.4 465.3 336.3 465.5 334.1 464.3 331.6 456.7 327.3 451.8 326.5 449.9 326.9 445.5 328.3 442.2 328.7 438.8 326.3 434.1 322.2 431.1 320.3 431.6 318.2 437.2 313.4 444.4 310.2 447.6 307.5 448.3 300.4 445.4 291.7 445.1 289.0 444.0 289.7 441.5 291.1 441.3 296.6 443.9 295.7 440.4 297.0 434.4 296.7 431.3 295.4 429.6 291.1 427.3 289.3 427.1 285.2 429.3 275.5 441.4 272.5 443.0 266.6 442.1 261.3 442.6 258.9 440.9 260.2 436.3 260.4 433.0 259.4 431.3 254.1 431.6 247.4 434.1 240.9 438.0 242.4 439.7 241.2 444.7 245.8 452.0 245.2 455.5 242.8 456.7 237.0 456.4 230.0 453.0 226.4 452.9 224.9 449.9 224.4 443.7 223.1 442.8 221.6 444.7 218.9 445.6 207.6 445.3 202.5 442.8 195.6 436.7 193.6 435.9 188.4 435.3 186.6 436.4 181.5 445.7 172.1 448.5 167.4 444.2 159.8 440.4 155.0 435.7 153.0 435.4 147.8 437.4 145.0 437.5 137.9 435.9 135.7 434.7 130.6 426.2 126.5 422.5 125.1 420.3 124.6 417.0 125.9 415.2 138.8 407.2 172.4 403.5 175.1 403.9 179.0 406.9 182.0 412.3 177.7 415.1 177.7 416.3 189.7 417.6 195.7 420.1 200.9 424.7 205.0 434.8 206.9 437.4 209.8 438.3 216.4 437.4 218.8 438.6 229.2 437.0 230.8 432.4 229.8 428.0 227.2 424.7 223.7 422.6 218.1 421.6 212.9 419.3 205.2 419.3 202.2 417.4 192.3 408.0 202.2 403.9 213.4 404.5 216.7 405.5 219.7 408.0 219.1 404.2 217.5 402.7 210.7 401.9 208.5 399.8 207.9 398.1 207.8 391.7 209.5 389.9 211.6 389.0 215.9 388.6 211.4 385.0 202.7 382.3 200.9 379.6 200.1 372.9 198.0 368.7 191.4 363.4 189.1 365.2 185.9 366.2 182.7 366.2 180.2 366.9 179.8 367.7 177.7 367.8 176.5 362.2 180.2 359.7 188.0 357.3 189.1 355.8 191.5 355.7 195.7 356.6 199.7 358.6 203.5 356.6 197.8 348.8 197.7 346.0 199.2 343.4 198.8 340.3 195.0 328.9 195.7 327.4 196.6 326.0 202.4 327.3 207.2 326.5 211.5 323.7 229.3 301.9 244.6 279.5 257.3 256.6 264.8 234.5 265.9 227.2 268.4 222.0 273.7 182.6 277.4 163.1 282.7 149.6 284.6 134.3 285.5 130.2 286.9 128.4 294.6 129.6 295.9 128.4 296.8 129.9 294.9 136.1 297.8 139.8 303.0 141.3 307.9 141.0 316.0 134.9 323.6 133.3 328.5 131.2 357.8 105.0 363.6 103.7 366.2 102.1 368.7 97.0 372.1 83.2 374.7 77.0 381.8 69.6 386.4 67.7 392.7 60.3 401.2 58.5 405.6 54.8 425.6 46.9 430.1 43.8 433.0 43.6 441.4 39.4 478.0 38.0 482.7 40.8 486.9 38.0 505.5 32.7 535.0 28.3 547.4 30.3 550.0 31.5 552.1 33.6 556.3 50.4 560.0 52.8 562.3 55.6 566.3 56.9 571.3 59.7 573.5 59.0 574.5 60.1 576.0 60.5 579.4 59.0 579.4 60.3 577.9 61.8 578.8 67.7 582.6 69.8 591.7 72.1ZM112.4 451.7 136.4 443.3 144.3 448.5 156.5 452.0 160.5 455.7 163.2 456.8 168.2 456.8 173.0 458.2 176.0 457.8 188.2 452.4 189.9 450.4 190.6 446.3 191.8 444.5 194.5 444.7 197.4 445.8 199.2 447.0 202.5 452.7 206.9 453.6 209.0 454.9 213.3 455.3 216.3 451.3 218.7 451.5 221.4 453.2 219.7 460.8 214.8 467.6 208.6 472.6 193.1 480.5 187.4 485.1 184.6 486.0 169.8 486.2 168.3 485.5 166.4 483.2 165.8 476.2 163.4 474.6 144.9 468.9 133.0 470.8 131.7 472.3 131.4 479.1 125.5 480.0 121.5 479.6 117.7 477.8 114.7 474.4 112.9 469.3 113.5 459.5ZM198.3 388.6 203.5 390.1 205.9 391.8 206.2 395.1 204.9 397.1 202.8 398.6 191.0 401.3 188.8 401.2 184.1 399.5 181.4 397.5 179.4 392.2 177.5 390.6 172.6 388.6 169.9 385.9 168.2 385.7 164.4 390.1 158.8 390.5 156.3 389.7 154.6 387.2 154.9 380.7 159.5 377.7 170.5 376.0 174.2 377.1 189.0 378.0 191.0 379.6 197.1 387.6ZM305.3 99.3 305.3 100.5 307.9 100.5 305.4 106.4 301.9 111.6 296.0 116.4 293.2 121.8 289.0 123.0 284.6 121.2 282.2 116.0 283.0 110.7 285.5 104.7 288.6 99.8 294.5 94.8 300.5 83.7 304.5 83.9 305.3 86.1 304.5 88.1 307.5 94.5 307.5 97.7ZM303.6 77.0 308.9 70.3 317.1 62.9 325.6 58.1 331.9 59.0 331.9 60.3 328.5 60.3 323.3 62.6 313.4 72.0 310.7 75.9 307.5 78.7ZM371.7 34.4 373.4 33.2 391.9 29.7 389.0 33.6 385.5 34.8 378.2 35.1 379.0 38.0 377.3 38.9 372.1 39.3 362.1 42.8 344.8 50.2 341.2 50.1 339.7 47.1 341.1 43.6 347.8 41.3 350.0 39.3 352.9 39.4 369.7 36.0ZM403.0 26.8 433.0 25.6 438.1 28.2 425.7 31.0 412.8 31.0 403.6 34.5 400.4 33.8 398.3 30.7 399.0 27.7 401.1 26.0ZM470.2 18.5 482.6 17.4 486.1 18.5 486.1 19.9 484.4 19.9 462.9 26.6 460.4 29.7 459.6 27.8 460.4 26.8 459.1 24.0 462.2 21.3 466.9 19.3ZM498.9 8.8 500.6 8.5 507.5 11.4 506.5 11.7 505.8 13.0 499.1 10.2Z", "be": "M9.0 510.1 11.5 508.2 16.2 506.6 33.2 493.5 59.2 477.8 84.4 461.0 112.4 451.7 113.5 459.5 112.9 469.3 114.7 474.4 117.7 477.8 121.5 479.6 125.5 480.0 131.4 479.1 131.7 472.3 133.0 470.8 144.9 468.9 163.4 474.6 165.8 476.2 166.4 483.2 168.3 485.5 169.8 486.2 184.6 486.0 187.4 485.1 193.1 480.5 208.6 472.6 214.8 467.6 219.7 460.8 221.4 453.2 223.9 455.5 225.8 461.2 231.6 467.8 232.3 470.3 230.8 473.6 232.3 472.8 235.1 467.8 229.9 465.1 229.1 456.8 226.4 452.9 230.0 453.0 237.0 456.4 242.8 456.7 245.2 455.5 245.8 452.0 241.2 444.7 242.4 439.7 240.9 438.0 247.4 434.1 254.1 431.6 259.4 431.3 260.4 433.0 260.2 436.3 258.9 440.9 261.3 442.6 266.6 442.1 272.5 443.0 275.5 441.4 285.2 429.3 289.3 427.1 291.1 427.3 295.4 429.6 296.7 431.3 297.0 434.4 295.7 440.4 296.6 443.9 291.1 441.3 289.7 441.5 289.0 444.0 291.7 445.1 300.4 445.4 307.5 448.3 310.2 447.6 313.4 444.4 318.2 437.2 320.3 431.6 322.2 431.1 326.3 434.1 328.7 438.8 328.3 442.2 326.9 445.5 326.5 449.9 327.3 451.8 331.6 456.7 334.1 464.3 336.3 465.5 343.4 465.3 345.6 468.1 345.7 475.4 347.9 475.9 352.6 474.7 367.4 475.4 370.0 474.4 377.7 469.4 380.4 469.7 383.3 471.6 385.6 474.7 386.9 483.2 389.8 485.7 396.9 487.9 401.1 491.5 410.1 490.6 412.1 491.8 416.4 496.9 420.3 495.9 422.4 496.1 423.8 499.7 422.1 501.5 421.7 503.8 424.5 506.9 422.1 508.2 419.4 508.3 420.2 511.2 418.6 515.4 417.7 516.7 416.2 515.4 415.2 516.1 414.3 520.7 415.9 523.1 414.0 528.1 409.0 536.1 411.8 535.3 414.3 536.1 409.0 545.8 405.6 547.4 396.5 557.8 396.8 562.3 398.8 565.4 401.7 567.5 406.3 569.4 404.8 576.4 407.1 577.8 409.7 577.8 412.8 573.9 417.9 578.2 428.7 577.9 431.5 578.8 440.6 579.1 443.1 578.7 443.0 580.2 445.1 581.3 444.7 585.4 445.2 587.1 453.9 586.1 456.3 588.5 463.9 600.5 462.2 601.6 463.7 604.6 466.3 606.0 474.9 606.2 475.2 607.4 472.9 611.7 466.1 616.8 463.8 620.6 465.9 623.3 465.1 625.8 467.6 626.3 466.6 628.1 469.6 632.2 475.7 630.5 478.2 631.8 485.9 633.3 484.5 634.7 484.2 636.3 485.2 640.2 487.6 642.9 487.6 646.3 485.8 653.8 486.0 656.2 490.3 664.0 490.6 666.9 489.0 668.6 485.7 669.2 481.2 668.2 479.5 669.2 477.4 672.8 477.7 676.6 475.4 678.8 467.5 681.6 462.1 687.5 464.0 690.3 212.7 690.3 214.7 685.8 218.9 681.9 219.2 679.8 216.9 677.0 214.1 675.5 212.5 676.2 212.6 678.9 211.7 679.8 209.4 678.7 206.0 671.1 200.7 667.1 196.6 662.3 194.2 661.1 191.5 661.4 183.6 664.8 180.7 664.9 173.8 660.8 168.6 660.2 163.1 660.6 160.4 662.5 155.9 670.4 151.5 666.1 149.3 640.5 147.3 636.6 144.8 634.2 139.2 632.1 131.1 632.1 129.6 630.9 131.0 627.0 130.2 625.9 128.4 625.4 126.6 625.5 122.4 629.0 116.9 631.1 113.9 631.5 111.7 630.8 104.6 626.5 102.6 623.9 102.0 621.6 101.8 615.2 98.5 603.7 97.5 597.9 99.2 594.5 97.8 589.6 96.8 587.7 93.4 586.9 92.4 585.7 87.0 574.8 84.9 572.7 81.7 571.7 65.2 577.1 62.3 578.9 60.0 581.4 56.3 588.2 54.6 589.5 42.1 584.1 39.8 582.0 36.7 575.4 32.1 570.8 30.2 566.7 28.6 565.8 24.1 566.0 21.3 565.1 19.6 561.4 17.1 559.3 18.3 554.8 15.9 545.9 16.6 544.0 20.2 539.8 19.8 535.8 13.4 527.6 12.1 523.7 10.9 514.8Z", "x": "M618.8 690.3 464.0 690.3 462.1 687.5 467.5 681.6 475.4 678.8 477.7 676.6 477.4 672.8 479.5 669.2 481.2 668.2 485.7 669.2 489.0 668.6 490.6 666.9 490.3 664.0 486.0 656.2 485.8 653.8 487.6 646.3 487.6 642.9 485.2 640.2 484.2 636.3 484.5 634.7 485.9 633.3 478.2 631.8 475.7 630.5 469.6 632.2 466.6 628.1 467.6 626.3 465.1 625.8 465.9 623.3 463.8 620.6 466.1 616.8 472.9 611.7 475.2 607.4 474.9 606.2 466.3 606.0 463.7 604.6 462.2 601.6 463.9 600.5 456.3 588.5 453.9 586.1 445.2 587.1 444.7 585.4 445.1 581.3 442.8 579.8 443.4 576.0 440.4 572.2 439.8 569.6 441.7 570.1 443.5 568.3 444.2 565.9 443.8 562.3 444.9 560.3 446.6 559.3 449.4 559.5 450.8 557.8 451.6 554.1 450.6 549.9 451.7 546.7 447.6 545.2 443.7 542.2 443.2 537.7 444.5 534.3 444.2 533.2 439.7 533.8 434.7 532.4 428.1 534.9 427.9 529.8 426.0 524.0 425.3 519.2 428.8 517.3 433.7 521.9 436.0 521.6 441.6 512.7 453.2 503.4 460.3 499.5 462.2 497.0 459.5 494.5 463.4 491.5 460.5 490.5 454.3 494.9 451.4 493.2 450.5 489.4 450.8 484.9 451.9 480.9 455.8 475.3 462.2 463.3 466.7 459.7 467.9 457.9 469.7 449.2 467.8 446.9 469.4 434.8 467.9 424.5 454.6 407.0 454.0 404.5 456.1 397.0 447.7 393.3 444.8 389.6 446.5 383.8 445.3 382.5 441.0 379.7 436.2 379.3 436.3 377.1 439.0 374.3 439.3 370.2 437.6 366.3 434.8 364.1 435.2 362.3 437.3 360.8 444.8 358.8 449.2 355.9 454.2 354.6 463.3 356.9 461.6 354.3 455.4 348.1 459.6 345.8 463.7 347.7 467.7 351.0 471.9 352.8 476.8 352.0 479.7 356.1 484.5 356.8 486.5 358.0 486.9 361.2 491.6 359.9 492.1 357.8 491.1 353.3 499.1 355.6 501.6 355.6 509.8 349.9 522.3 345.7 533.3 345.3 536.7 343.5 539.6 340.0 542.5 334.8 545.1 332.9 544.9 329.0 541.0 324.6 528.1 317.8 527.9 314.7 528.7 312.6 532.7 311.2 535.4 306.2 537.5 304.0 539.5 302.8 547.6 301.9 549.2 300.5 551.9 294.8 554.4 292.3 559.7 290.0 562.2 287.7 566.5 281.4 572.0 278.0 572.4 277.0 570.2 270.7 570.3 267.0 573.7 258.1 574.8 250.7 573.0 245.5 565.4 233.2 562.7 236.0 556.3 237.2 552.8 236.6 546.3 234.1 536.4 232.7 533.1 231.1 530.6 228.3 529.3 218.1 527.7 214.9 529.8 214.7 536.7 211.2 531.7 206.5 532.5 201.3 531.5 199.2 535.9 196.0 540.1 194.7 551.9 194.5 558.6 196.5 564.7 195.6 571.1 197.8 573.3 193.4 575.4 164.3 576.5 157.6 578.7 151.4 589.0 135.5 591.7 128.7 592.9 122.2 593.0 114.9 591.9 100.4 590.3 96.3 590.2 93.9 593.2 84.3 593.1 72.1 595.7 69.9 597.9 66.3 598.4 63.8 597.4 61.6 600.6 56.9 602.3 56.1 605.2 56.1 607.9 56.7 614.6 60.3 611.6 56.0 606.6 54.3 578.2 53.3 573.5 51.0 571.7 45.4 571.7 30.4 572.2 26.9 576.2 15.9 583.7 17.0 586.5 12.8 586.2 10.2 585.1 8.7 581.5 7.0 579.9 5.3 579.6 2.7 581.4 0.4 585.4 -2.3 597.0 -13.5 606.9 -17.2 618.8 -18.5ZM543.5 -0.9 534.1 1.9 534.1 3.1 536.5 4.4 538.3 7.5 534.5 4.6 530.6 6.0 528.4 4.9 526.7 2.6 526.2 0.2 527.6 -0.9 537.2 -3.7 541.8 -4.1ZM553.0 -14.8 557.6 -17.0 574.6 -19.1 579.4 -17.7ZM585.4 -21.9 591.1 -25.2 597.9 -26.3 612.0 -26.0 611.9 -24.8 605.7 -22.5 590.4 -20.6ZM9.0 510.1 10.9 514.8 12.1 523.7 13.4 527.6 19.8 535.8 20.2 539.8 16.6 544.0 15.9 545.9 18.3 554.8 17.1 559.3 19.6 561.4 21.3 565.1 24.1 566.0 28.6 565.8 30.2 566.7 32.1 570.8 36.7 575.4 39.8 582.0 42.1 584.1 54.6 589.5 56.3 588.2 60.0 581.4 62.3 578.9 65.2 577.1 81.7 571.7 84.9 572.7 87.0 574.8 92.4 585.7 93.4 586.9 96.8 587.7 97.8 589.6 99.2 594.5 97.5 597.9 98.5 603.7 101.8 615.2 102.0 621.6 102.6 623.9 104.6 626.5 111.7 630.8 113.9 631.5 116.9 631.1 122.4 629.0 126.6 625.5 128.4 625.4 130.2 625.9 131.0 627.0 129.6 630.9 131.1 632.1 139.2 632.1 144.8 634.2 147.3 636.6 149.3 640.5 151.5 666.1 155.9 670.4 160.4 662.5 163.1 660.6 168.6 660.2 173.8 660.8 180.7 664.9 183.6 664.8 191.5 661.4 194.2 661.1 196.6 662.3 200.7 667.1 206.0 671.1 209.4 678.7 211.7 679.8 212.6 678.9 212.5 676.2 214.1 675.5 216.9 677.0 219.2 679.8 218.9 681.9 214.7 685.8 212.7 690.3 -18.7 690.3 -18.7 516.9 -15.7 515.7 -8.2 516.7 2.0 513.9 8.9 510.1Z", "lk": "M471.1 48.0 474.6 48.5 476.6 50.4 475.2 52.5 471.1 52.8 462.9 51.9 462.1 49.8 464.7 40.3 466.8 39.2 469.6 40.0 472.4 42.1 470.2 43.7 468.1 42.1 468.2 46.6ZM427.5 215.2 427.8 223.0 426.3 227.8 418.9 239.0 412.1 245.0 407.8 247.2 400.5 249.4 396.7 252.5 391.0 259.3 386.9 268.9 385.4 270.4 374.7 273.1 369.3 272.6 363.9 270.0 352.3 261.6 341.4 261.6 332.8 256.3 322.6 254.2 314.8 249.5 316.5 248.1 316.5 246.6 318.3 246.9 319.9 248.1 319.9 246.6 321.9 248.1 324.0 242.8 328.2 239.5 330.2 235.7 328.2 234.6 326.5 231.2 325.0 230.0 328.5 228.7 327.6 225.8 330.1 223.2 329.2 218.1 325.0 209.1 323.3 203.1 323.1 197.9 325.0 194.5 329.4 193.8 332.7 195.1 335.8 197.9 339.5 196.9 347.1 192.2 349.1 189.9 350.8 185.0 352.6 183.4 356.8 181.3 355.5 174.0 354.6 172.9 348.3 170.1 346.3 170.0 343.1 170.9 340.0 173.4 335.8 170.1 334.1 167.4 333.1 150.0 326.9 137.5 324.3 135.3 329.5 133.2 334.9 129.9 354.7 112.8 365.3 106.2 367.5 112.4 369.9 115.3 370.5 117.8 369.6 122.8 370.8 125.1 371.3 128.4 370.8 131.7 368.7 133.9 370.4 137.2 364.5 143.1 364.9 146.5 370.1 150.8 374.0 151.8 382.0 152.1 388.4 154.9 390.5 154.6 394.5 152.1 398.4 151.3 407.5 153.8 409.0 154.9 404.5 155.8 400.8 158.4 397.7 162.4 395.2 167.5 393.3 181.0 393.5 188.9 397.3 193.6 401.3 200.7 403.3 201.3 419.9 200.4 422.1 200.9 423.8 202.2 425.1 204.4 426.0 207.7ZM426.0 222.0 426.1 218.0 423.6 209.1 403.8 204.3 400.5 200.7 398.2 202.5 391.0 204.9 383.3 211.8 379.5 211.8 378.6 212.6 375.6 220.2 373.9 221.6 369.2 223.5 363.6 228.7 354.2 232.4 348.9 237.7 341.1 241.9 335.4 246.6 337.9 255.0 340.5 256.5 348.3 256.5 356.8 259.7 360.8 261.9 368.3 267.9 371.7 269.2 379.9 268.9 384.3 267.2 387.0 263.4 387.7 258.4 386.7 252.2 390.2 250.3 395.8 248.6 398.5 244.7 400.0 243.8 416.4 238.4 419.7 235.2 424.4 227.2Z", "rv": "M426.0 207.8 428.4 206.9 432.5 209.2 440.5 219.1 445.9 219.1 447.6 221.1 450.0 222.3 451.7 225.5 455.7 229.8 457.7 235.6 460.3 239.3 460.6 242.7 459.3 244.8 458.8 247.6 453.9 249.6 454.7 251.9 453.5 253.6 452.3 259.5 454.5 262.8 457.1 264.0 459.3 269.9 459.3 272.8 461.8 274.3 461.5 277.1 462.0 278.1 463.7 279.1 465.8 276.8 467.4 276.7 467.0 283.1 468.0 292.6 467.8 298.5 469.5 302.4 469.7 305.6 468.0 307.6 459.0 312.3 458.3 315.1 459.0 317.4 461.2 316.3 463.2 317.0 463.6 319.0 462.2 321.8 455.6 325.3 453.2 323.8 450.5 323.4 443.9 326.9 443.0 330.1 439.3 330.5 436.2 333.2M447.6 349.3 446.8 345.9 439.7 340.2 437.7 335.0 429.5 327.4 426.5 330.3 419.2 330.3 416.7 333.1 411.6 331.2 397.0 335.7 391.5 334.4 381.9 328.5 376.5 327.4 371.3 330.2 366.6 328.9 363.8 329.5 360.1 332.4M360.1 332.4 357.5 333.1 350.5 329.1 348.6 329.5 346.4 331.3 343.4 331.9 340.3 331.4 338.0 330.2 335.1 325.7 331.8 324.1 326.7 326.3 322.5 330.1 317.3 328.9 313.1 331.5 308.3 335.7 300.1 335.2 297.6 335.7 290.8 340.6 286.3 341.9 278.9 345.5 268.1 345.5 257.4 341.4 251.4 344.0 236.4 346.0 232.4 345.5 228.4 342.7 223.5 341.4 209.7 328.5 206.0 327.1M618.6 639.6 617.2 639.7 610.3 632.1 602.4 615.8 595.4 610.0 594.4 598.7 590.6 589.0 582.0 580.7 579.8 575.9 574.2 572.5 572.3 567.4 565.7 560.4 567.0 557.2 573.2 553.3 575.2 550.1 567.0 547.8 565.7 546.5 564.1 539.5 564.5 537.5 566.7 535.5 567.4 533.4 567.0 531.9 564.1 529.0 564.5 522.2 562.6 521.1 555.5 513.9 550.3 512.4 550.2 510.3 553.0 507.5 553.5 504.8 553.2 503.4 549.9 502.0 550.3 497.1 549.5 495.5 546.9 495.7 545.1 497.2 544.0 497.2 542.9 490.6 541.2 490.3 538.7 491.1 535.8 490.1 534.8 488.0 534.3 481.8 535.4 480.5 538.5 482.0 539.6 481.1 540.0 479.7 538.3 476.9 531.7 472.9 531.9 469.9 534.8 464.8 535.0 461.7 525.5 454.8 528.1 451.2 534.4 450.1 535.8 448.5 536.2 445.3 535.3 442.6 532.3 438.6 533.8 434.0 533.4 432.4 529.9 431.4 529.4 430.4 530.6 427.6 533.7 425.0 532.8 422.6 529.0 418.6 528.1 416.3 529.5 413.2 525.7 411.7 517.8 410.8 518.0 407.2 517.1 400.0 518.8 397.8 517.0 394.0 511.8 394.0 505.2 392.1 503.6 390.8 500.2 385.0 498.3 383.0 495.5 381.7 496.3 377.5 494.7 374.9 486.5 372.4 482.7 364.9 478.5 361.2 454.2 354.5 448.1 349.4 445.5 348.1 443.2 348.3 440.6 353.8 436.9 352.5 434.9 349.9 431.7 351.3 426.2 355.1 424.2 354.7 420.4 352.0 417.6 351.2 414.2 347.7 408.6 346.3 386.6 345.0 376.5 346.8 372.7 350.3 365.5 361.8 360.9 363.4 356.8 359.4 341.3 362.2 330.2 359.4 316.9 360.7M316.9 360.7 310.6 359.3 307.4 359.4 302.5 363.8 299.4 364.8 292.5 364.9 286.2 370.7 284.4 374.2 278.2 381.8M244.1 384.1 234.2 379.9 213.8 365.3 203.5 356.6M615.7 689.5 616.9 687.2 618.5 686.3M613.6 257.0 611.3 251.5 612.9 248.1 611.2 248.1 612.0 245.3 609.5 245.3 610.4 240.1 609.5 239.7 611.2 238.3 611.2 237.0 607.8 230.9 605.8 225.1 606.0 217.4 603.4 215.9 602.7 214.4 603.4 211.8 601.7 210.6 603.4 210.6 603.4 209.0 600.8 207.3 600.3 205.7 600.9 203.5 599.1 202.2 601.0 198.8 600.0 195.1 600.0 193.8 600.9 193.8 600.9 192.4 600.0 192.4 600.0 191.0 601.7 189.7 603.5 184.8 605.2 182.6 602.6 179.6 601.7 174.9 600.0 164.6 601.6 162.0 601.0 160.9 599.1 160.5 600.2 158.2 603.6 156.1 607.8 146.8 605.9 140.5 605.2 133.9 608.7 116.6 607.8 111.6 604.2 108.0 605.2 102.7 607.1 100.6 614.0 97.9 613.7 93.7 614.6 91.9 614.8 86.7 618.0 83.2M618.3 70.3 617.2 61.1 616.0 60.3 614.6 60.3M103.1 685.7 108.7 674.2 113.4 668.7 116.5 666.8 119.5 666.0 124.9 666.9 127.7 666.6 130.2 664.4 135.2 652.6 142.1 641.8 138.4 637.2 123.5 627.6 122.5 625.1 122.4 622.1 123.1 613.2 116.6 605.5 113.3 597.3 112.5 592.0 114.7 585.3 120.3 579.2 142.9 562.0 148.4 552.7 153.4 548.3 154.2 546.0 150.8 541.5 150.7 538.6 154.0 536.8 159.8 529.1 163.2 518.6 166.2 519.2 171.6 526.1 174.6 527.3 177.9 526.1 192.5 524.8 196.4 525.1 199.0 522.5 200.6 518.7 202.1 517.3 203.7 517.0 207.5 519.1 209.0 518.8 212.9 515.8 216.2 519.6 217.7 518.8 218.3 516.8 216.8 510.3 216.9 506.7 220.7 503.2 228.3 502.7 233.2 501.1 234.8 497.9 235.4 493.4 237.3 488.0 242.7 482.2 243.2 480.3 232.3 473.3M405.1 575.0 406.8 563.5 406.3 555.4 403.9 551.3 406.4 547.2 409.0 545.8 414.2 536.1 411.8 535.3 409.0 536.1 413.9 528.0 415.9 523.0 414.2 520.7 415.1 516.0 416.1 515.4 417.6 516.7 418.5 515.4 420.2 511.1 419.3 508.2 422.0 508.2 424.4 506.8 421.6 503.7 422.0 501.4 426.2 497.1 428.1 496.9 431.2 493.0 437.0 494.0 438.1 491.6 437.0 491.2 435.5 488.8 439.9 488.6 441.1 487.2 442.5 481.4 445.7 477.2 444.9 473.6 447.6 473.0 451.8 467.8 456.3 465.2 460.4 455.3 464.0 452.4 464.5 448.3 462.9 443.5 466.4 430.3 466.4 424.7 462.0 422.6 460.3 417.4 458.0 415.5 450.4 412.1 447.0 401.9 444.5 397.7 441.5 394.7 442.3 392.8 440.4 390.6 438.7 383.3 436.8 381.7 431.7 381.2 429.8 379.9 428.7 377.4 429.1 375.0 426.6 373.7 413.7 373.1 405.0 367.0 401.4 365.4 399.1 360.7 393.5 359.4 385.6 360.6 381.3 358.4 373.9 362.2 368.9 361.8 366.4 363.1 364.7 370.5 363.1 373.1 358.5 376.2 329.9 379.4 326.4 381.7 306.7 381.8 303.6 380.3 302.1 381.4 297.1 383.0M215.9 388.6 221.0 393.0 228.8 396.3 235.5 394.5 240.3 391.1 244.1 384.1 257.1 386.7 261.9 386.6 274.2 381.9 286.3 380.6 289.0 380.6 295.2 383.2 297.6 383.3M297.6 687.8 299.1 687.6 302.9 689.6 303.6 687.0 306.8 685.6 306.2 682.4 307.0 681.3 309.6 680.9 308.1 674.7 306.5 673.2 307.0 668.1 304.3 663.1 301.1 659.8 302.5 659.1 303.1 658.0 304.0 650.1 304.9 648.0 305.0 645.4 302.3 639.6 303.6 636.3 313.5 632.1 318.6 634.7 319.8 634.2 321.6 630.7 324.1 629.5 332.3 629.2 334.9 628.4 343.0 623.8 349.3 624.2 352.2 620.9 355.4 620.9 357.6 622.7 366.9 614.1 370.4 612.1 376.5 610.6 381.1 607.0 388.8 607.0 390.2 605.9 392.7 598.6 397.0 597.3 398.1 596.3 399.5 593.2 404.8 586.0 406.2 581.5 404.7 577.8 405.1 575.0"};
+  function bxy(la, lo){ return [(lo - BASE.lon0) * BASE.kx, (BASE.lat1 - la) * BASE.ky]; }
+  var CITY = {
+    ams:{b:'Amsterdam', la:52.3731, lo:4.8922, an:'start', dx:12, dy:7},
+    sch:{b:'Schiphol Airport', la:52.3105, lo:4.7683, an:'end',   dx:-11, dy:18},
+    zaan:{b:'Zaanse Schans', la:52.4740, lo:4.8180, an:'end',   dx:-11, dy:2},
+    gieth:{b:'Giethoorn', la:52.7400, lo:6.0790, an:'start', dx:12, dy:7},
+    rot:{b:'Rotterdam', la:51.9225, lo:4.4792, an:'end',   dx:-10, dy:22},
+    kin:{b:'Kinderdijk', la:51.8840, lo:4.6390, an:'start', dx:11, dy:16},
+    dlf:{b:'Delft', la:52.0116, lo:4.3594, an:'end',   dx:-11, dy:2},
+    ant:{b:'Antwerp', la:51.2194, lo:4.4025, an:'start', dx:12, dy:7},
+    bru:{b:'Brussels', la:50.8467, lo:4.3525, an:'start', dx:12, dy:7},
+    brg:{b:'Bruges', la:51.2085, lo:3.2245, an:'middle', dx:0, dy:-14},
+    gnt:{b:'Ghent', la:51.0543, lo:3.7174, an:'middle', dx:0, dy:28}
+  };
+  /* Each day's city-to-city legs: [from, to, mode]; boat is drawn dashed */
+  var ROUTE = [
+    [['sch','ams']],
+    [['ams','zaan'],['zaan','ams']],
+    [['ams','gieth'],['gieth','ams']],
+    [['ams','bru'],['bru','brg']],
+    [['brg','gnt'],['gnt','ant'],['ant','ams']],
+    [['ams','rot'],['rot','kin','boat'],['kin','rot','boat'],['rot','dlf'],['dlf','ams']],
+    [['ams','sch']]
+  ];
+  var MV = {route:'Route', stops:'Stops', g:'Google Maps'};
+
+  function f1(n){ return Math.round(n * 10) / 10; }
+
+  function routeSvg(di){
+    var on = {};
+    ROUTE[di].forEach(function(l){ on[l[0]] = on[l[1]] = 1; });
+    function seg(l, cls){
+      var a = bxy(CITY[l[0]].la, CITY[l[0]].lo), b = bxy(CITY[l[1]].la, CITY[l[1]].lo);
+      return '<path class="'+cls+'" d="M'+f1(a[0])+' '+f1(a[1])+'L'+f1(b[0])+' '+f1(b[1])+'"/>';
+    }
+    var all = '', today = '';
+    ROUTE.forEach(function(legs, i){ if (i !== di) legs.forEach(function(l){ all += seg(l, 'rt-all'); }); });
+    ROUTE[di].forEach(function(l){ today += seg(l, 'rt-on' + (l[2] === 'boat' ? ' boat' : '')); });
+    var dots = '', labs = '';
+    Object.keys(CITY).forEach(function(k){
+      var C = CITY[k], p = bxy(C.la, C.lo), o = on[k] ? ' on' : '';
+      dots += '<circle class="cd'+o+'" cx="'+f1(p[0])+'" cy="'+f1(p[1])+'" r="'+(o ? 8 : 5.5)+'"/>';
+      labs += '<text class="cl'+o+'" x="'+f1(p[0] + C.dx)+'" y="'+f1(p[1] + C.dy)+'" text-anchor="'+C.an+'">'+esc(C.b)+'</text>';
+    });
+    var names = DAYS[di].k;
+    return '<svg class="mapsvg" viewBox="40 96 530 520" role="img" aria-label="'+esc('Netherlands–Belgium route map: '+names)+'">'+
+      '<rect class="sea" x="0" y="0" width="600" height="700"/>'+
+      '<path class="lx" d="'+BASE.x+'"/><path class="nl" d="'+BASE.nl+'"/><path class="be" d="'+BASE.be+'"/>'+
+      '<path class="lk" d="'+BASE.lk+'"/><path class="rv" d="'+BASE.rv+'"/>'+
+      '<text class="seaname" x="70" y="200" style="letter-spacing:.12em">North Sea</text>'+
+      '<text class="ctry" x="455" y="300" text-anchor="middle" style="letter-spacing:.1em">NETHERLANDS</text><text class="ctry" x="330" y="600">BELGIUM</text>'+
+      '<text class="ctry" x="560" y="430" text-anchor="end">GERMANY</text>'+
+      all + today + dots + labs + '</svg>';
+  }
+
+  /* Stops with coordinates for the day, numbered in time order */
+  function stopsOf(di){
+    var out = [];
+    DAYS[di].items.forEach(function(it, i){
+      if (it.ll) out.push({i:i, n:out.length + 1, it:it, la:it.ll[0], lo:it.ll[1]});
+    });
+    return out;
+  }
+  function km(a, b){
+    var dx = (a.lo - b.lo) * 111.32 * Math.cos(a.la * Math.PI / 180), dy = (a.la - b.la) * 110.57;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  /* Stops within 3.5 km of each other share one map (far ones are listed separately) */
+  function clustersOf(stops){
+    var cls = [];
+    stops.forEach(function(s){
+      var hit = [];
+      cls.forEach(function(c, ci){ if (c.some(function(t){ return km(s, t) < 3.5; })) hit.push(ci); });
+      if (!hit.length) { cls.push([s]); return; }
+      var merged = [s];
+      hit.slice().reverse().forEach(function(ci){ merged = cls[ci].concat(merged); cls.splice(ci, 1); });
+      merged.sort(function(a, b){ return a.n - b.n; });
+      cls.splice(hit[0], 0, merged);
+    });
+    return cls;
+  }
+  function nearestCity(c){
+    var la = 0, lo = 0; c.forEach(function(s){ la += s.la; lo += s.lo; });
+    var m = {la:la / c.length, lo:lo / c.length}, best = null, bd = 1e9;
+    Object.keys(CITY).forEach(function(k){ var d = km(m, CITY[k]); if (d < bd) { bd = d; best = CITY[k].b; } });
+    return best;
+  }
+  function clusterSvg(c){
+    var W = 600, pad = 56, la0 = 90, la1 = -90, lo0 = 999, lo1 = -999;
+    c.forEach(function(s){ la0 = Math.min(la0, s.la); la1 = Math.max(la1, s.la); lo0 = Math.min(lo0, s.lo); lo1 = Math.max(lo1, s.lo); });
+    var cs = Math.cos((la0 + la1) / 2 * Math.PI / 180);
+    var wkm = Math.max((lo1 - lo0) * 111.32 * cs, 0.9), hkm = Math.max((la1 - la0) * 110.57, 0.6);
+    var s = Math.min((W - 2 * pad) / wkm, (400 - 2 * pad) / hkm);
+    var H = Math.max(260, Math.round(hkm * s + 2 * pad)) + 34;  /* leave room for the scale bar below */
+    var ox = (W - (lo1 - lo0) * 111.32 * cs * s) / 2, oy = (H - 34 - (la1 - la0) * 110.57 * s) / 2;
+    var P = c.map(function(t){ return {x:ox + (t.lo - lo0) * 111.32 * cs * s, y:oy + (la1 - t.la) * 110.57 * s, t:t}; });
+    /* push numbers that are too close apart so they don't overlap */
+    for (var it = 0; it < 60; it++) {
+      var moved = false;
+      for (var a = 0; a < P.length; a++) for (var b = a + 1; b < P.length; b++) {
+        var dx = P[b].x - P[a].x, dy = P[b].y - P[a].y, d = Math.sqrt(dx * dx + dy * dy);
+        if (d < 50) {
+          if (d < 0.01) { dx = 1; dy = 0.6; d = 1.17; }
+          var k = (50 - d) / 2 / d; P[a].x -= dx * k; P[a].y -= dy * k; P[b].x += dx * k; P[b].y += dy * k; moved = true;
+        }
+      }
+      P.forEach(function(p){ p.x = Math.min(W - 28, Math.max(28, p.x)); p.y = Math.min(H - 64, Math.max(28, p.y)); });
+      if (!moved) break;
+    }
+    /* only join stops that are next to each other in time; break the line if you went elsewhere in between */
+    var wd = '';
+    for (var w = 1; w < P.length; w++) if (P[w].t.n === P[w - 1].t.n + 1)
+      wd += 'M' + f1(P[w - 1].x) + ' ' + f1(P[w - 1].y) + 'L' + f1(P[w].x) + ' ' + f1(P[w].y);
+    var walk = wd ? '<path class="walk" d="' + wd + '"/>' : '';
+    var badges = P.map(function(p){
+      return '<g class="sb'+(p.t.it.must ? ' must' : '')+'" data-i="'+p.t.i+'" tabindex="0" role="button" aria-label="'+esc('Stop '+p.t.n+': '+p.t.it.name)+'">'+
+        '<circle cx="'+f1(p.x)+'" cy="'+f1(p.y)+'" r="23"/><text x="'+f1(p.x)+'" y="'+f1(p.y + 1)+'">'+p.t.n+'</text></g>';
+    }).join('');
+    /* scale bar */
+    var steps = [0.1, 0.2, 0.5, 1, 2, 5, 10], L = steps[0];
+    steps.forEach(function(v){ if (v * s <= 170) L = v; });
+    var lx = 22, ly = H - 20, lw = L * s, gs = L * s, grid = '';
+    for (var gx = gs; gx < W; gx += gs) grid += 'M'+f1(gx)+' 0V'+H;
+    for (var gy = gs; gy < H; gy += gs) grid += 'M0 '+f1(gy)+'H'+W;
+    var scale = '<path class="scl" d="M'+lx+' '+(ly - 9)+'V'+ly+'H'+f1(lx + lw)+'V'+(ly - 9)+'"/>'+
+      '<text class="sct" x="'+f1(lx + lw + 8)+'" y="'+(ly + 2)+'">'+(L < 1 ? Math.round(L * 1000) + ' m' : L + ' km')+'</text>';
+    return '<svg class="mapsvg zoom" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Stops for the day"><path class="grid" d="'+grid+'"/>'+walk+badges+scale+'</svg>';
+  }
+  function stopLabel(it){ return it.name.replace(/^(Lunch|Dinner):\s+|\s+in the morning$/g, ''); }
+  function stopsHtml(di){
+    LCL = [];
+    var stops = stopsOf(di);
+    if (!stops.length) return '<p class="mapnote">No mapped stops this day.</p>';
+    var cls = clustersOf(stops), html = '', singles = [];
+    cls.forEach(function(c){
+      if (c.length < 2) { singles.push(c[0]); return; }
+      html += '<div class="cluster"><h5>'+esc(nearestCity(c))+'<small>'+c.length+' stops</small></h5>'+(window.L ? '<div class="lmap" data-c="'+(LCL.push(c) - 1)+'"></div>' : clusterSvg(c))+
+        '<ul class="stoplist">'+c.map(function(t){
+          return '<li><button type="button" data-i="'+t.i+'"><span class="sn'+(t.it.must ? ' must' : '')+'">'+t.n+'</span>'+esc(stopLabel(t.it))+'</button></li>';
+        }).join('')+'</ul></div>';
+    });
+    if (singles.length) {
+      html += '<p class="mapnote">Not on the maps above (farther away, see Route):</p><ul class="stoplist">'+singles.map(function(t){
+        return '<li><button type="button" data-i="'+t.i+'"><span class="sn'+(t.it.must ? ' must' : '')+'">'+t.n+'</span>'+esc(stopLabel(t.it))+'</button></li>';
+      }).join('')+'</ul>';
+    }
+    return html + (window.L ? '<p class="mapnote">Locations are approximate. Pinch to zoom, tap a number to jump to that stop. The map needs a connection.</p>' : '<p class="mapnote">(Offline, showing a simple map.) Locations are approximate and close numbers get nudged apart; one grid square = the scale bar. Tap a number to jump to that stop.</p>');
+  }
+  var gSel = 0;
+  function gHtml(di){
+    var qs = [];
+    DAYS[di].items.forEach(function(it){ if (it.q && qs.indexOf(it.q) < 0) qs.push(it.q); });
+    if (!qs.length) return '<p class="mapnote">No places this day.</p>';
+    if (gSel >= qs.length) gSel = 0;
+    var q = qs[gSel];
+    var names = {};
+    DAYS[di].items.forEach(function(it){ if (it.q && !names[it.q]) names[it.q] = stopLabel(it); });
+    return '<div class="mapchips" role="group" aria-label="Pick a place">'+qs.map(function(x, i){
+        return '<button type="button" data-g="'+i+'" aria-pressed="'+(i === gSel)+'">'+esc(names[x])+'</button>';
+      }).join('')+'</div>'+
+      '<iframe class="gmap" src="https://www.google.com/maps?q='+encodeURIComponent(q)+'&amp;z=15&amp;output=embed" loading="lazy" title="Google Maps" referrerpolicy="no-referrer-when-downgrade"></iframe>'+
+      '<p class="mapnote">Needs a connection to load. For directions, <a href="'+map(q)+'" target="_blank" rel="noopener">open in the Google Maps app ↗</a></p>';
+  }
+  /* Stops map: Esri street tiles (no key needed), falls back to the simple map offline */
+  var LCL = [], LMAPS = [];
+  function killMaps(){ LMAPS.forEach(function(m){ m.remove(); }); LMAPS = []; }
+  function initMaps(){
+    if (!window.L) return;
+    document.querySelectorAll('.lmap').forEach(function(el){
+      var c = LCL[+el.dataset.c]; if (!c) return;
+      var m = L.map(el, {scrollWheelZoom:false, dragging:!L.Browser.mobile, tap:false, zoomSnap:0.5});
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom:19,
+        attribution:'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors'
+      }).addTo(m);
+      for (var w = 1; w < c.length; w++) if (c[w].n === c[w - 1].n + 1)
+        L.polyline([[c[w - 1].la, c[w - 1].lo], [c[w].la, c[w].lo]], {color:'#1F4FA3', weight:4, opacity:.75, dashArray:'2 9', lineCap:'round'}).addTo(m);
+      c.forEach(function(t){
+        L.marker([t.la, t.lo], {
+          icon:L.divIcon({className:'lpin', html:'<span class="sn'+(t.it.must ? ' must' : '')+'">'+t.n+'</span>', iconSize:[28, 28], iconAnchor:[14, 14]}),
+          title:t.n + ' ' + t.it.name, keyboard:true, riseOnHover:true
+        }).on('click', function(){ goStop(t.i); }).addTo(m);
+      });
+      m.fitBounds(c.map(function(t){ return [t.la, t.lo]; }), {paddingTopLeft:[56, 40], paddingBottomRight:[30, 40], maxZoom:16});
+      LMAPS.push(m);
+    });
+  }
+  function mapBody(){
+    var di = state.day;
+    if (state.mv === 'stops') return stopsHtml(di);
+    if (state.mv === 'g') return gHtml(di);
+    return routeSvg(di) + '<p class="mapnote">Orange line = today, dotted = other days, boats are dashed orange. Drawn to lat/lon, so distances are real.</p>';
+  }
+  function mapCard(){
+    return '<div class="mapcard tile"><div class="mapseg" role="group" aria-label="Map">'+
+      Object.keys(MV).map(function(k){ return '<button type="button" data-mv="'+k+'" aria-pressed="'+(state.mv === k)+'">'+MV[k]+'</button>'; }).join('')+
+      '</div><div id="mapbody">'+mapBody()+'</div></div>';
+  }
+  function renderMap(){
+    killMaps();
+    document.getElementById('mapbody').innerHTML = mapBody();
+    initMaps();
+    document.querySelectorAll('.mapseg button').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.mv === state.mv)); });
+    try { localStorage.setItem('nlbe-pub-en-view', JSON.stringify(state)); } catch(e){}
+  }
+  function goStop(i){
+    var el = document.getElementById('ev-' + state.day + '-' + i); if (!el) return;
+    el.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'center'});
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  }
+  document.getElementById('daypanel').addEventListener('click', function(e){
+    var b = e.target.closest('.mapseg button');
+    if (b) { state.mv = b.dataset.mv; gSel = 0; renderMap(); return; }
+    var g = e.target.closest('.mapchips button');
+    if (g) { gSel = +g.dataset.g; renderMap(); return; }
+    var s = e.target.closest('.sb, .stoplist button');
+    if (s) goStop(+s.dataset.i);
+  });
+  document.getElementById('daypanel').addEventListener('keydown', function(e){
+    var s = e.target.closest && e.target.closest('.sb');
+    if (s && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); goStop(+s.dataset.i); }
+  });
+
+  function renderTabs(){
+    document.getElementById('daytabs').innerHTML = DAYS.map(function(d,i){
+      return '<button type="button" class="daytab" role="tab" id="tab-'+i+'" aria-selected="'+(i===state.day)+'" aria-controls="daypanel" data-i="'+i+'">'+
+        '<div class="d">'+esc(d.d)+'</div><div class="w">'+esc(d.w)+'</div><div class="k">'+esc(d.k)+'</div></button>';
+    }).join('');
+  }
+
+  function renderDay(){
+    var d = DAYS[state.day];
+    var html = '<div class="day-title"><div class="row"><span class="tag '+CTRY[d.c][1]+'">'+CTRY[d.c][0]+'</span><h3>'+esc(d.title)+'</h3></div><p>'+esc(d.note)+'</p></div>'+mapCard()+'<ol class="tl">';
+    var sn = {}; stopsOf(state.day).forEach(function(s){ sn[s.i] = s.n; });
+    gSel = 0;
+    d.items.forEach(function(it, idx){
+      if (it.split){ html += '<li class="split">'+esc(it.split)+'</li>'; return; }
+      var tr = TR[it.tr];
+      html += '<li id="ev-'+state.day+'-'+idx+'" class="ev'+(it.must?' is-must':'')+'" style="animation-delay:'+(Math.min(idx,12)*30)+'ms">'+
+        '<div class="t">'+esc(it.t)+'</div><span class="dot" aria-hidden="true"></span>'+
+        '<div class="card"><div class="tags">'+
+          (tr ? '<span class="tag '+tr[1]+'">'+tr[0]+'</span>' : '')+
+          (it.must ? '<span class="tag must">Must-do</span>' : '')+
+          (it.book ? '<span class="tag book">Book ahead</span>' : '')+
+        '</div><h4>'+(sn[idx] ? '<span class="sn'+(it.must?' must':'')+'">'+sn[idx]+'</span>' : '')+esc(it.name)+'</h4>'+
+        (it.p ? '<p>'+esc(it.p)+'</p>' : '')+
+        (it.alt ? '<p class="alt"><b>Plan B</b> '+esc(it.alt)+'</p>' : '')+
+        (it.q ? '<div class="links"><a href="'+map(it.q)+'" target="_blank" rel="noopener">Open in Google Maps ↗</a></div>' : '')+
+        '</div></li>';
+    });
+    html += '</ol>';
+    killMaps();
+    document.getElementById('daypanel').innerHTML = html;
+    initMaps();
+    document.querySelectorAll('.daytab').forEach(function(b){ b.setAttribute('aria-selected', String(+b.dataset.i === state.day)); });
+    try { localStorage.setItem('nlbe-pub-en-view', JSON.stringify(state)); } catch(e){}
+  }
+
+  document.getElementById('daytabs').addEventListener('click', function(e){
+    var b = e.target.closest('.daytab'); if (!b) return;
+    state.day = +b.dataset.i; renderDay();
+  });
+  document.getElementById('daytabs').addEventListener('keydown', function(e){
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    state.day = (state.day + (e.key === 'ArrowRight' ? 1 : DAYS.length - 1)) % DAYS.length;
+    renderDay(); document.getElementById('tab-'+state.day).focus();
+  });
+
+  /* checklist */
+  var done = {};
+  try { done = JSON.parse(localStorage.getItem('nlbe-pub-en-todo')||'{}') || {}; } catch(e){ done = {}; }
+  function renderTodo(){
+    document.getElementById('todolist').innerHTML = TODO.map(function(t,i){
+      return '<li><label><input type="checkbox" id="todo-'+i+'" data-i="'+i+'"'+(done[i]?' checked':'')+'><span class="tx">'+esc(t[0])+(t[2]?'<span class="tag book">Book ahead</span>':'')+'<span class="sub">'+esc(t[1])+'</span></span></label></li>';
+    }).join('');
+    countTodo();
+  }
+  function countTodo(){
+    var n = TODO.filter(function(_,i){ return done[i]; }).length;
+    document.getElementById('todo-count').textContent = n + ' / ' + TODO.length + ' done';
+  }
+  document.getElementById('todolist').addEventListener('change', function(e){
+    var cb = e.target; if (cb.type !== 'checkbox') return;
+    done[cb.dataset.i] = cb.checked;
+    try { localStorage.setItem('nlbe-pub-en-todo', JSON.stringify(done)); } catch(e2){}
+    countTodo();
+  });
+  document.getElementById('todo-reset').addEventListener('click', function(){
+    done = {};
+    try { localStorage.removeItem('nlbe-pub-en-todo'); } catch(e){}
+    renderTodo();
+  });
+
+  /* Must eat */
+  document.getElementById('eat-list').innerHTML = EAT.map(function(g){
+    return '<div class="eat-group"><h3><span class="tag '+CTRY[g.c][1]+'">'+esc(g.area)+'</span></h3><div class="places">'+
+      g.items.map(function(p){
+        return '<a class="place" href="'+map(p[2])+'" target="_blank" rel="noopener"><span class="area">'+esc(p[1])+'</span>'+esc(p[0])+'</a>';
+      }).join('')+'</div></div>';
+  }).join('');
+
+  /* Plan B */
+  document.getElementById('options-list').innerHTML = OPTIONS.map(function(g){
+    return '<div class="opt-group"><h3>'+esc(g.area)+'<span class="fit">'+esc(g.fit)+'</span></h3><div class="places">'+
+      g.items.map(function(p){
+        return '<a class="place" href="'+map(p[0])+'" target="_blank" rel="noopener">'+esc(p[0])+'<span class="note">'+esc(p[1])+'</span></a>';
+      }).join('')+'</div></div>';
+  }).join('');
+
+  /* Expenses: kept in this phone's localStorage (nlbe-pub-en-exp, nlbe-pub-en-rate) */
+  var M_KEY = 'nlbe-pub-en-exp', R_KEY = 'nlbe-pub-en-rate';
+  var M_DAYS = ['Pre-trip', '10/18', '10/19', '10/20', '10/21', '10/22', '10/23', '10/24'];
+  var M_CATS = ['Food', 'Transport', 'Tickets', 'Shopping', 'Stay', 'Other'];
+  var M_CATC = {'Food':'var(--orange)','Transport':'var(--blue)','Tickets':'var(--green)','Shopping':'var(--gold)','Stay':'var(--red)','Other':'var(--ink-2)'};
+  var M_PM = {cash:'Cash', card:'Card'};
+  function mLoad(k, d){ try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } }
+  function mSave(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+  var book = mLoad(M_KEY, null);
+  if (!book || !Array.isArray(book.items)) {
+    /* First open: seed a few sample entries (all amounts are fictional) */
+    book = {items:[
+      {id:'flight', a:32400, c:'TWD', pm:'card', k:'Transport', d:'Pre-trip', t:'Demo Air (fictional) tickets XA 801 / XA 802', ts:1},
+      {id:'hotel', a:960, c:'EUR', pm:'card', k:'Stay', d:'Pre-trip', t:'Lanternhof Canal Lantern Hotel (fictional), 5 nights', ts:2},
+      {id:'brugge', a:125, c:'EUR', pm:'card', k:'Stay', d:'Pre-trip', t:'Kantwerk Inn (fictional), 1 night', ts:3},
+      {id:'demo1', a:9.5, c:'EUR', pm:'card', k:'Food', d:'10/18', t:'Dutch pancakes (sample)', ts:4}
+    ]};
+  }
+  var rate = +mLoad(R_KEY, 36) || 36;
+  var mFilter = 'all';
+  var form = {c:'EUR', pm:'card'};
+
+  function eur(e){ return e.c === 'TWD' ? e.a / rate : e.a; }
+  function fmt(n, dp){ return n.toLocaleString('en-US', {minimumFractionDigits:dp||0, maximumFractionDigits:dp||0}); }
+  function money(n){ return '€' + fmt(n, n < 100 ? 2 : 0); }
+  function msg(t){ var el = document.getElementById('m-msg'); el.textContent = t; clearTimeout(msg.t); msg.t = setTimeout(function(){ el.textContent = ''; }, 3500); }
+  function todayDay(){
+    var now = new Date(Date.now() + 2*3600000).toISOString().slice(0,10);
+    if (now < '2027-10-18') return 'Pre-trip';
+    if (now > '2027-10-24') return '10/24';
+    return '10/' + now.slice(8,10);
+  }
+
+  document.getElementById('m-cat').innerHTML = M_CATS.map(function(c){ return '<option>'+c+'</option>'; }).join('');
+  document.getElementById('m-day').innerHTML = M_DAYS.map(function(d){ return '<option'+(d===todayDay()?' selected':'')+'>'+d+'</option>'; }).join('');
+  document.getElementById('m-rate').value = rate;
+
+  function renderMoney(){
+    var items = book.items.slice().sort(function(a,b){ return (M_DAYS.indexOf(b.d) - M_DAYS.indexOf(a.d)) || (b.ts - a.ts); });
+    var shown = mFilter === 'all' ? items : items.filter(function(e){ return e.d === mFilter; });
+    var tot = shown.reduce(function(s,e){ return s + eur(e); }, 0);
+    document.getElementById('m-lb').textContent = mFilter === 'all' ? 'All spending' : mFilter + ' spending';
+    document.getElementById('m-eur').textContent = money(tot);
+    document.getElementById('m-twd').textContent = 'NT$' + fmt(tot * rate);
+
+    var chips = [['all','All']].concat(M_DAYS.map(function(d){ return [d,d]; }));
+    document.getElementById('m-days').innerHTML = chips.map(function(c){
+      return '<button type="button" data-d="'+c[0]+'" aria-pressed="'+(mFilter===c[0])+'">'+c[1]+'</button>';
+    }).join('');
+
+    var by = {};
+    shown.forEach(function(e){ by[e.k] = (by[e.k]||0) + eur(e); });
+    var keys = Object.keys(by).sort(function(a,b){ return by[b]-by[a]; });
+    document.getElementById('m-brk-wrap').hidden = !keys.length;
+    document.getElementById('m-brk').innerHTML = keys.map(function(k){
+      var pct = tot ? by[k]/tot*100 : 0;
+      return '<div class="b"><span>'+esc(k)+'</span><span class="bar"><i style="width:'+pct.toFixed(1)+'%;background:'+(M_CATC[k]||'var(--blue)')+'"></i></span><span class="v">'+money(by[k])+' · '+Math.round(pct)+'%</span></div>';
+    }).join('');
+
+    document.getElementById('m-list').innerHTML = shown.length ? shown.map(function(e){
+      var other = e.c === 'TWD' ? 'NT$' + fmt(e.a) : 'NT$' + fmt(e.a * rate);
+      return '<li><span class="t">'+esc(e.t || e.k)+'</span>'+
+        '<span class="m">'+esc(e.d)+' · '+esc(e.k)+' · '+(M_PM[e.pm]||'')+'</span>'+
+        '<span class="a"><b>'+money(eur(e))+'</b><small>'+other+'</small></span>'+
+        '<button type="button" class="del" data-id="'+esc(e.id)+'">Delete</button></li>';
+    }).join('') : '<li class="mempty">'+(mFilter==='all'?'Nothing logged yet. Add your first one above.':'Nothing logged for this day yet.')+'</li>';
+  }
+
+  document.getElementById('m-days').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (!b) return;
+    mFilter = b.dataset.d; renderMoney();
+  });
+  document.querySelectorAll('.seg').forEach(function(seg){
+    seg.addEventListener('click', function(e){
+      var b = e.target.closest('button'); if (!b) return;
+      form[seg.dataset.f] = b.dataset.v;
+      seg.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); });
+    });
+  });
+  document.getElementById('m-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    var a = parseFloat(document.getElementById('m-amt').value);
+    if (!(a > 0)) { msg('Enter an amount first'); document.getElementById('m-amt').focus(); return; }
+    book.items.push({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+      a: a, c: form.c, pm: form.pm,
+      k: document.getElementById('m-cat').value,
+      d: document.getElementById('m-day').value,
+      t: document.getElementById('m-note').value.trim(),
+      ts: Date.now()
+    });
+    mSave(M_KEY, book);
+    document.getElementById('m-amt').value = '';
+    document.getElementById('m-note').value = '';
+    msg('Added'); renderMoney();
+  });
+  document.getElementById('m-list').addEventListener('click', function(e){
+    var b = e.target.closest('.del'); if (!b) return;
+    if (!b.classList.contains('armed')) {
+      b.classList.add('armed'); b.textContent = 'Tap again to delete';
+      setTimeout(function(){ if (b.isConnected) { b.classList.remove('armed'); b.textContent = 'Delete'; } }, 3000);
+      return;
+    }
+    var id = b.dataset.id;
+    book.items = book.items.filter(function(x){ return x.id !== id; });
+    mSave(M_KEY, book); renderMoney(); msg('Deleted');
+  });
+  document.getElementById('m-rate').addEventListener('change', function(){
+    var v = parseFloat(this.value);
+    if (v > 0) { rate = v; mSave(R_KEY, rate); renderMoney(); msg('Rate updated'); } else { this.value = rate; }
+  });
+
+  function copyText(text, okMsg){
+    var ta = document.getElementById('m-copy');
+    function fallback(){ ta.value = text; ta.select(); try { document.execCommand('copy'); msg(okMsg); } catch(e){ msg('Couldn’t copy automatically'); } }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function(){ msg(okMsg); }, fallback);
+      } else { fallback(); }
+    } catch(e){ fallback(); }
+  }
+  document.getElementById('m-tsv').addEventListener('click', function(){
+    if (!book.items.length) { msg('Nothing logged yet'); return; }
+    var rows = [['Day','Category','Note','Amount','Currency','EUR','TWD','Paid by'].join('\t')];
+    book.items.forEach(function(e){
+      rows.push([e.d, e.k, e.t, e.a, e.c, eur(e).toFixed(2), Math.round(eur(e)*rate), M_PM[e.pm]||''].join('\t'));
+    });
+    copyText(rows.join('\n'), 'Table copied, paste it into a spreadsheet');
+  });
+  var clearBtn = document.getElementById('m-clear');
+  clearBtn.addEventListener('click', function(){
+    if (!book.items.length) { msg('Already empty'); return; }
+    if (!clearBtn.classList.contains('armed')) {
+      clearBtn.classList.add('armed'); clearBtn.textContent = 'Tap again to clear (can’t undo)';
+      setTimeout(function(){ clearBtn.classList.remove('armed'); clearBtn.textContent = 'Clear all expenses'; }, 3000);
+      return;
+    }
+    book.items = [];
+    mSave(M_KEY, book);
+    clearBtn.classList.remove('armed'); clearBtn.textContent = 'Clear all expenses';
+    renderMoney(); msg('Cleared');
+  });
+  renderMoney();
+
+  /* Countdown: 10/17 23:30 Taipei time */
+  var target = new Date('2027-10-17T23:30:00+08:00').getTime();
+  var endTrip = new Date('2027-10-25T14:40:00+08:00').getTime();
+  function pad(n){ return (n<10?'0':'')+n; }
+  function setCd(d,h,m){ document.getElementById('cd-d').textContent = d; document.getElementById('cd-h').textContent = h; document.getElementById('cd-m').textContent = m; }
+  function tick(){
+    var now = Date.now(), diff = target - now;
+    var note = document.getElementById('cd-note');
+    if (now > endTrip){ setCd('0','00','00'); note.textContent = 'Trip’s over'; return; }
+    if (diff <= 0){ setCd('0','00','00'); note.textContent = 'Trip in progress'; return; }
+    setCd(Math.floor(diff/86400000), pad(Math.floor(diff%86400000/3600000)), pad(Math.floor(diff%3600000/60000)));
+    note.textContent = 'until takeoff, Sun 10/17 23:30';
+  }
+  tick(); setInterval(tick, 30000);
+
+  renderTabs(); renderDay(); renderTodo();
+})();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").then(null, function () {});
+  });
+}
+</script></body>
+</html>

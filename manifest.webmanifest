@@ -1,7 +1,7 @@
 {
-  "name": "荷比七日",
-  "short_name": "荷比七日",
-  "description": "荷蘭＋比利時 10/19–10/25 行程與記帳",
+  "name": "荷比七日 示範版",
+  "short_name": "荷比示範",
+  "description": "荷蘭＋比利時七日示範行程與記帳（虛構資料）",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
